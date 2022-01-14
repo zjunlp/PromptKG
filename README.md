@@ -1,1 +1,1 @@
-# KGPrompt
+# PromptKGC
