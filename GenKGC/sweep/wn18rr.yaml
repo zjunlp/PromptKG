@@ -1,0 +1,52 @@
+command:
+  - ${env}
+  - ${interpreter}
+  - "main.py"
+  - "--wandb"
+  - "--overwrite_cache"
+  - ${args}
+program: main.py
+method: grid
+name: fb15k-knn-test
+metric:
+  name: Test/hits10
+  goal: maxmize
+parameters:
+  accumulate_grad_batches:
+    value: '1'
+  batch_size:
+    value: '64'
+  beam_size:
+    value: '50'
+  check_val_every_n_epoch:
+    value: '10'
+  beam_size:
+    values: [10, 50, 100]
+  data_dir:
+    value: dataset/WN18RR
+  eval_batch_size:
+    value: '1'
+  lr:
+    value: 3e-5
+  max_epochs:
+    value: '20'
+  max_seq_length:
+    value: '64'
+  model_class:
+    value: BartKGC
+  model_name_or_path:
+    value: facebook/bart-base
+  num_workers:
+    value: '32'
+  output_full_sentence:
+    value: '0'
+  precision:
+    value: '16'
+  prefix_tree_decode:
+    value: '1'
+  use_demos:
+    value: '1'
+  use_label_type:
+    value: '0'
+  gpus:
+    value: "0,"

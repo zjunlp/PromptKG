@@ -1,0 +1,35 @@
+command:
+  - ${env}
+  - ${interpreter}
+  - "main.py"
+  - "--wandb"
+  - ${args}
+program: main.py
+method: grid
+name: umls
+metric:
+  name: Eval/acc
+  goal: maxmize
+parameters:
+  num_workers:
+    value: 16
+  model_name_or_path:
+    value: google/t5-v1_1-base
+  model_class:
+    value: T5KGC
+  accumulate_grad_batches:
+    values: [1,2]
+  batch_size:
+    values: [8,16]
+  data_dir:
+    value:  ./dataset/umls
+  check_val_every_n_epoch:
+    value: 2
+  lr:
+    values: [1e-4,3e-5,6e-5,1e-5]
+  max_epochs:
+    values: [10, 30]
+  gpus:
+    value: "1,"
+  max_seq_length:
+    value: 128

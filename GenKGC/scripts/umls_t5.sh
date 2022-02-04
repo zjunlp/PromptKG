@@ -1,0 +1,12 @@
+python main.py --gpus "0," --max_epochs=30  --num_workers=16 \
+   --model_name_or_path  t5-base \
+   --accumulate_grad_batches 1 \
+   --model_class T5KGC \
+   --batch_size 16 \
+   --check_val_every_n_epoch 1 \
+   --val_check_interval 0.5 \
+   --precision 16 \
+   --data_dir dataset/umls \
+   --overwrite_cache \
+   --max_seq_length 128 \
+   --lr 1e-4 
