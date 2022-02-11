@@ -1,4 +1,4 @@
-# KNN-KG
+# GenKGC
 Code for our paper "[From Discrimination to Generation: Knowledge Graph Completion with Generative Transformer](https://arxiv.org/abs/2202.02113)"
 
 Requirements
