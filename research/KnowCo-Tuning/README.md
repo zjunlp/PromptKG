@@ -1,6 +1,6 @@
 # KnowCo-Tuning
 
-本项目主要是关于[基于知识协同微调的低资源知识图谱补全方法](http://jos.org.cn/jos/article/abstract/6628?st=search)的数据集和代码。
+本项目主要是关于软件学报论文[《基于知识协同微调的低资源知识图谱补全方法》](http://jos.org.cn/jos/article/abstract/6628?st=search)的数据集和代码。
 
 ## 数据集
 
