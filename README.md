@@ -6,7 +6,7 @@
 |-----------|-------------|
 | [toolkit](toolkit) | • A prompt-based toolkit for knowledge graph construction and application |
 | [research](research) | • A collection of research model implementations in Pytorch by researchers |
-| [tutorial-notebooks](tutorial-notebooks) | • Tutorial notebooks for beginngers |
+| [tutorial-notebooks](tutorial-notebooks) | • Tutorial notebooks for beginners |
 
 
 
