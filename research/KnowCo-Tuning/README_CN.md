@@ -1,4 +1,4 @@
-[**中文说明**](https://github.com/zjunlp/PromptKG/tree/main/research/KnowCo-Tuning/README_CN.md) | [**English**](https://github.com/zjunlp/PromptKG/edit/main/research/KnowCo-Tuning/README.md)
+[**中文说明**](https://github.com/zjunlp/PromptKG/tree/main/research/KnowCo-Tuning/README_CN.md) | [**English**](https://github.com/zjunlp/PromptKG/main/main/research/KnowCo-Tuning/README.md)
 
 # KnowCo-Tuning
 
