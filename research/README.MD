@@ -1,4 +1,4 @@
-# PromptKGC
+# PromptKG
 
 **Large-scale Knowledge Graph Construction and Application with Prompting across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
 
