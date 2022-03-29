@@ -1,27 +1,31 @@
+[**中文说明**](https://github.com/zjunlp/PromptKG/new/main/research/KnowCo-Tuning/blob/main/README_CN.md) | [**English**](https://github.com/zjunlp/OpenUE/blob/main/README.md)
+
+
 # KnowCo-Tuning
 
-本项目主要是关于软件学报论文[《基于知识协同微调的低资源知识图谱补全方法》](http://jos.org.cn/jos/article/abstract/6628?st=search)的数据集和代码。
+This project is mainly about the dataset and code of the Software Journal paper ["A Low-Resource Knowledge Graph Complementation Method Based on Knowledge Co-Tuning"](http://jos.org.cn/jos/article/abstract/6628?st=search).
 
-## 数据集
+## dataset
 
-我们在`dataset`下面放置了已经处理好的少样本知识图谱数据集供学者使用。
+We have placed under `dataset` the already processed dataset of low-sample knowledge graphs for scholars to use.
 
-## 依赖项
-使用`pip`来下载代码所需要的依赖库
+## Dependencies
+Use ``pip`` to download the dependency libraries needed for the code
 
 ```shell
 pip install -r requirements.txt
 ```
 
-## 运行
+## Run
 
-以`FB15k237`数据集为例子，我们只需要在安装相对应依赖库之后运行以下脚本即可。
+Using the `FB15k237` dataset as an example, we just need to run the following script after installing the corresponding dependency libraries.
 ```shell
-bash ./scripts/fb15.sh
+bash . /scripts/fb15.sh
 ```
 
-## 引用
-如果您对我们工作感兴趣或在项目中使用了我们的代码请以如下格式引用。
+## Citation
+If you are interested in our work or have used our code in your project please reference it in the following format.
+
 
 ```bibtex
 
