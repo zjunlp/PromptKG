@@ -21,23 +21,3 @@ pip install -r requirements.txt
 ```shell
 bash ./scripts/fb15.sh
 ```
-
-## 引用
-如果您对我们工作感兴趣或在项目中使用了我们的代码请以如下格式引用。
-
-```bibtex
-
-@Article{20220,
-title = {基于知识协同微调的低资源知识图谱补全方法},
-author = {张宁豫,谢辛,陈想,邓淑敏,叶宏彬,陈华钧},
- journal = {软件学报},
- volume = {33},
- number = {10},
- pages = {0},
- numpages = {16.0000},
- year = {2022},
- month = {},
- doi = {10.13328/j.cnki.jos.006628},
- publisher = {科学出版社}
-}
-```
