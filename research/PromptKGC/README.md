@@ -1,9 +1,9 @@
-[**中文说明**](https://github.com/zjunlp/PromptKG/tree/main/research/KnowCo-Tuning/README_CN.md) | [**English**](https://github.com/zjunlp/PromptKG/tree/main/research/KnowCo-Tuning/README.md)
+[**中文说明**](https://github.com/zjunlp/PromptKG/tree/main/research/PromptKGC/README_CN.md) | [**English**](https://github.com/zjunlp/PromptKG/tree/main/research/PromptKGC/README.md)
 
 
-# KnowCo-Tuning
+# PromptKGC
 
-This project is mainly about the dataset and code of the Software Journal paper ["A Low-Resource Knowledge Graph Complementation Method Based on Knowledge Co-Tuning"](http://jos.org.cn/jos/article/abstract/6628?st=search).
+This project is mainly about the dataset and code of the prompt-based few-shot knowledge graph completion.
 
 ## dataset
 
