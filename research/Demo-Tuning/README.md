@@ -1,6 +1,6 @@
 # Demo-Tuning
 
-This is the implement of the paper "Contrastive Demonstration Tuning for Pre-trained Language Models". Demo Tuning is a novel pluggable, extensible, and efficient approach with contrastive demonstration tuning, which is free of demonstration sampling.
+This is the implement of the paper ["Contrastive Demonstration Tuning for Pre-trained Language Models"](). Demo Tuning is a novel pluggable, extensible, and efficient approach with contrastive demonstration tuning, which is free of demonstration sampling.
 
 <div align=center><img src="resources/img/model.png" width="80%" height="80%" /></div>
 
