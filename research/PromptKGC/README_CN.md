@@ -18,6 +18,11 @@ pip install -r requirements.txt
 ## 运行
 
 以`FB15k237`数据集为例子，我们只需要在安装相对应依赖库之后运行以下脚本即可。
+我们准备了4个数据集供使用和训练。
+
 ```shell
-bash ./scripts/fb15.sh
+bash . /scripts/fb15.sh
+bash . /scripts/fb15_few.sh # for few shot fb15k-237
+bash . /scripts/wn18rr.sh # for wn18rr 
+bash . /scripts/umls.sh # for umls
 ```

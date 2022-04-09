@@ -19,6 +19,11 @@ pip install -r requirements.txt
 ## Run
 
 Using the `FB15k237` dataset as an example, we just need to run the following script after installing the corresponding dependency libraries.
+And we prepare 4 dataset in our `dataset` folder for use.
+
 ```shell
 bash . /scripts/fb15.sh
+bash . /scripts/fb15_few.sh # for few shot fb15k-237
+bash . /scripts/wn18rr.sh # for wn18rr 
+bash . /scripts/umls.sh # for umls
 ```
