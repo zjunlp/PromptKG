@@ -14,5 +14,3 @@
 ### Contact Information
 
 For help or issues using the models, please submit a GitHub issue.
-
-For other communications, please contact [Ningyu Zhang](https://person.zju.edu.cn/en/ningyu/).
