@@ -9,6 +9,11 @@ To install requirements:
 pip install -r requirements.txt
 ```
 
+## Download dataset
+
+[click me.](https://drive.google.com/drive/folders/1carN96-mvbYfW_X1Rt-eLCGjEYx3iOda?usp=sharing)
+
+You can download `OpenBG500` from the link above.
 
 Run the experiments
 ==========
@@ -20,8 +25,6 @@ Use the script in the `scripts` fold. Take `fb15k-237` dataset for example.
 ```shell
 ./scripts/fb15k.sh
 ```
-
-
 
 # Citation
 If you use the code, please cite the following paper:
