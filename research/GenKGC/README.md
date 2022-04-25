@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 [click me.](https://drive.google.com/drive/folders/1carN96-mvbYfW_X1Rt-eLCGjEYx3iOda?usp=sharing)
 
-You can download `OpenBG500` from the link above.
+You can download [`OpenBG500`](https://github.com/OpenBGBenchmark/OpenBG500) from the link above.
 
 Run the experiments
 ==========
