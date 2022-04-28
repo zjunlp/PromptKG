@@ -97,3 +97,28 @@ LAMBDA_CL=1.0
 ```
 
 ## Citation
+
+```bibtex
+@article{DBLP:journals/corr/abs-2204-04392,
+  author    = {Xiaozhuan Liang and
+               Ningyu Zhang and
+               Siyuan Cheng and
+               Zhen Bi and
+               Zhenru Zhang and
+               Chuanqi Tan and
+               Songfang Huang and
+               Fei Huang and
+               Huajun Chen},
+  title     = {Contrastive Demonstration Tuning for Pre-trained Language Models},
+  journal   = {CoRR},
+  volume    = {abs/2204.04392},
+  year      = {2022},
+  url       = {https://doi.org/10.48550/arXiv.2204.04392},
+  doi       = {10.48550/arXiv.2204.04392},
+  eprinttype = {arXiv},
+  eprint    = {2204.04392},
+  timestamp = {Wed, 13 Apr 2022 14:34:17 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2204-04392.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+```
