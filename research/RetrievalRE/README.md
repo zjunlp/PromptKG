@@ -1,6 +1,6 @@
 # RetrieveRE
 
-Code for the SIGIR 2022 short paper "[Relation Extraction as Open-book Examination: Retrieval-enhanced Prompt Tuning]()"
+Code for the SIGIR 2022 short paper "[Relation Extraction as Open-book Examination: Retrieval-enhanced Prompt Tuning](https://arxiv.org/pdf/2205.02355.pdf)"
 
 # Model Architecture
 
