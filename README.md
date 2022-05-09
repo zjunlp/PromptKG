@@ -1,6 +1,6 @@
 # PromptKG
 
-**Large-scale Knowledge Graph Construction and Applications with Prompting across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
+**A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models  across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
 
 | Directory | Description |
 |-----------|-------------|
