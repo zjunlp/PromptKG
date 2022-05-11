@@ -26,3 +26,16 @@ bash . /scripts/fb15_few.sh # for few shot fb15k-237
 bash . /scripts/wn18rr.sh # for wn18rr 
 bash . /scripts/umls.sh # for umls
 ```
+
+## 引用
+
+```bibtex
+@Article{zhang2022promptkgc,
+title = {Knowledge Collaborative Fine-tuning for Low-resource Knowledge Graph Completion},
+author = {Ningyu Zhang and Xin Xie and Xiang Chen and Deng Shumin and Ye Hongbin and Chen Huajun},
+ journal = {Journal of Software},
+ volume = {33},
+ number = {10},
+ year = {2022}
+}
+```
