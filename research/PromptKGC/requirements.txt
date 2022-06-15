@@ -4,3 +4,4 @@ torch==1.8.1+cu111
 transformers==4.3.0
 tqdm==4.49.0
 dataclasses==0.8
+torchmetrics==0.5
