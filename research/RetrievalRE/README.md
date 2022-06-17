@@ -2,6 +2,15 @@
 
 Code for the SIGIR 2022 short paper "[Relation Extraction as Open-book Examination: Retrieval-enhanced Prompt Tuning](https://arxiv.org/pdf/2205.02355.pdf)"
 
+# Related Work
+
+## KnowPrompt (WWW2022)
+* Our method is based on [Relation Extraction as Open-book Examination: Retrieval-enhanced Prompt Tuning]([https://arxiv.org/abs/2205.02355](https://dl.acm.org/doi/abs/10.1145/3485447.3511998) that has been accepted by WWW2022. The project address is visible at [KnowPrompt](https://github.com/zjunlp/KnowPrompt).
+
+## PTR
+* Our paper is also related to [PTR: Prompt Tuning with Rules for Text Classification](https://arxiv.org/abs/2105.11259).
+
+
 # Model Architecture
 
 <div align=center>
