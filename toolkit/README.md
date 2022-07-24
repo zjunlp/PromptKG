@@ -30,9 +30,17 @@ pip install -r requirements.txt
 ## Run your first experiment
 
 We first provide `link-prediction` as our example downstream task.
+For `link-prediction` task, we provide `FB15k-237` and `WN18RR` dataset for use.
+You can use the command below to run the `simkgc` model on `FB15k-237` dataset.
 
 ```shell
 bash ./scripts/simkgc/fb15k.sh
+```
+
+For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command below
+
+```shell
+bash ./scripts/knnkge/fb15k.sh
 ```
 
 
