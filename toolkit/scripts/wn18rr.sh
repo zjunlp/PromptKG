@@ -1,0 +1,14 @@
+python main.py --gpus "1," --max_epochs=25  --num_workers=32 \
+   --model_name_or_path  facebook/bart-base \
+   --accumulate_grad_batches 2 \
+   --model_class BartKGC \
+   --batch_size 32 \
+   --check_val_every_n_epoch 5 \
+   --dataset FB15k-237 \
+   --eval_batch_size 256 \
+   --overwrite_cache \
+   --wandb \
+   --prefix_tree_decode 1 \
+   --max_seq_length 128 \
+   --precision 16 \
+   --lr 1e-6 
