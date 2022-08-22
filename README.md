@@ -1,5 +1,3 @@
-# PromptKG
-
 <div align="center">
 
 <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
