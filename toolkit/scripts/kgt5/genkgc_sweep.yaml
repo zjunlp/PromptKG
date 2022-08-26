@@ -1,0 +1,32 @@
+program:
+  main.py
+method: bayes
+metric:
+  name: hits10
+  goal: maximize
+parameters:
+  lr:
+    values: [1e-4, 5e-5, 3e-5, 1e-5]
+  max_epochs:
+    values: [20, 30]
+  use_ce_loss:
+    values: [0, 1]
+command:
+  - ${env}
+  - python3
+  - ${program}
+  - --num_workers=8
+  - --model_name_or_path=facebook/bart-base
+  - --num_sanity_val_steps=0  
+  - --model_class=BartKGC 
+  - --lit_model_class=KGBartLitModel
+  - --label_smoothing=0.1
+  - --data_class=KGT5DataModule  
+  - --precision=16  
+  - --batch_size=64  
+  - --check_val_every_n_epoch=5 
+  - --wandb
+  - --dataset=WN18RR  
+  - --eval_batch_size=24 
+  - --max_seq_length=128
+  - ${args}

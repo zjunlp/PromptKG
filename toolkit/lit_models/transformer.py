@@ -17,18 +17,27 @@ from .base import BaseLitModel
 from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 
 from functools import partial
-from .utils import rank_score, acc
+from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good
 
 from models.trie import get_end_to_end_prefix_allowed_tokens_fn_hf
 
 from models import Trie
 from models.model import BartKGC
 from models.trie import get_trie
-from models import SimKGCModel
+from models import *
 
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 from typing import Callable, Iterable, List
+
+
+__all__ = (
+    "SimKGCLitModel",
+    "KNNKGELitModel",
+    "KNNKGEPretrainLitModel",
+    "KGT5LitModel",
+    "KGBartLitModel"
+)
 
 def lmap(f: Callable, x: Iterable) -> List:
     """list(map(f, x))"""
@@ -122,12 +131,12 @@ def compute_metrics(hr_tensor: torch.tensor,
     assert len(topk_scores) == total
     return topk_scores, topk_indices, metrics, 
 
-class TransformerSimKGC(BaseLitModel):
-    def __init__(self, model:SimKGCModel, args, tokenizer=None):
-        super().__init__(model, args)
+class SimKGCLitModel(BaseLitModel):
+    def __init__(self, args, tokenizer=None, **kwargs):
+        super().__init__( args)
         self.save_hyperparameters(ignore=['model', 'tokenizer'])
         self.args = args
-        self.model = model
+        self.model = SimKGCModel(args)
         self.criterion = nn.CrossEntropyLoss()
 
 
@@ -166,8 +175,7 @@ class TransformerSimKGC(BaseLitModel):
     def validation_step(self, batch, batch_idx):
         return self._eval(batch, batch_idx)
     
-    @rank_zero_only
-    def on_test_epoch_start(self):
+    def init_entity_embedding(self):
         """
         get entity embedding in the KGs through description.
         
@@ -180,8 +188,13 @@ class TransformerSimKGC(BaseLitModel):
                 batch[k] = batch[k].to(self.device)
             entity_embedding += self.model.predict_ent_embedding(**batch).tolist()
         
+
         entity_embedding = torch.tensor(entity_embedding, device=self.device)
         self.entity_embedding = entity_embedding
+    
+    def on_test_epoch_start(self):
+        self.init_entity_embedding()
+    
 
     def test_step(self, batch, batch_idx):
         hr_vector = self.model(**batch)['hr_vector']
@@ -218,7 +231,8 @@ class TransformerSimKGC(BaseLitModel):
         for h in [1,3,10]:
             results.update({f"hits{h}" : (ranks<=h).float().mean()})
         
-        self.logger.log_metrics(results)
+        # self.logger.log_metrics(results)
+        self.log_dict(results)
     
     def validation_epoch_end(self, outputs) -> None:
         acc1 = torch.cat([_['acc1'] for _ in outputs], dim=0)
@@ -235,36 +249,211 @@ class TransformerSimKGC(BaseLitModel):
         return parser
 
 
+class LOGModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self,x):
+        return torch.log(x)
+
+class KNNKGELitModel(BaseLitModel):
+    def __init__(self, args, tokenizer, **kwargs):
+        super().__init__(args)
+        self.save_hyperparameters(args)
+        if args.label_smoothing != 0.0:
+            self.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=args.label_smoothing)
+        else:
+            # self.loss_fn = nn.CrossEntropyLoss()
+            # self.last_layer = nn.Sequential(
+            #     SparseMax_good(),
+            #     LOGModel(),
+            # )
+            # t = nn.NLLLoss()
+            # self.loss_fn = lambda x,y: t(self.last_layer(x), y)
+            self.loss_fn = SparseMax(100)
+        self.best_acc = 0
+        self.tokenizer = tokenizer
+        self.model = KNNKGEModel.from_pretrained(args.model_name_or_path)
+
+        # self.__dict__.update(data_config)
+        # resize the word embedding layer
+
+        self.decode = partial(decode, tokenizer=self.tokenizer)
+        self.model.resize_token_embeddings(len(self.tokenizer) + kwargs['num_entity'] + kwargs['num_relation'])
+
+
+    def on_fit_start(self) -> None:
+
+        self.entity_id_st = self.tokenizer.vocab_size
+        self.entity_id_ed = self.tokenizer.vocab_size + self.trainer.datamodule.num_entity
+        self.realtion_id_st = self.tokenizer.vocab_size + self.trainer.datamodule.num_entity
+        self.realtion_id_ed = self.tokenizer.vocab_size + self.trainer.datamodule.num_entity + self.trainer.datamodule.num_relation
+
+    def forward(self, x):
+        return self.model(x)
+
+    def training_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # embed();exit()
+        # print(self.optimizers().param_groups[1]['lr'])
+        label = batch.pop("label")
+        input_ids = batch['input_ids']
+        logits = self.model(**batch, return_dict=True).logits
+
+        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bs = input_ids.shape[0]
+        mask_logits = logits[torch.arange(bs), mask_idx][:, self.entity_id_st:self.entity_id_ed]
+
+        assert mask_idx.shape[0] == bs, "only one mask in sequence!"
+
+        loss = self.loss_fn(mask_logits, label)
+
+        # if batch_idx == 0:
+        #     print('\n'.join(self.decode(batch['input_ids'][:4])))
+        
+
+        return loss
+
+    def _eval(self, batch, batch_idx, ):
+        input_ids = batch['input_ids']
+        # single label
+        label = batch.pop('label')
+        filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
+        my_keys = list(batch.keys())
+        for k in my_keys:
+            if k not in ["input_ids", "attention_mask", "token_type_ids"]:
+                batch.pop(k)
+        logits = self.model(**batch, return_dict=True).logits[:, :, self.entity_id_st:self.entity_id_ed]
+        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bsz = input_ids.shape[0]
+        logits = logits[torch.arange(bsz), mask_idx]
+        # get the entity ranks
+        # filter the entity
+        # assert filter_entity_ids[0][label[0]], "correct ids must in filiter!"
+        # labels[torch.arange(bsz), label] = 0
+        
+        # assert logits.shape == labels.shape
+        for i in range(logits.shape[0]):
+            # if len(filter_entity_ids[i]) == 0: continue
+            try:
+                logits[i][filter_entity_ids[i]] = -100
+            except:
+                import IPython; IPython.embed(); exit(1)
+        # logits += labels * -100 # mask entityj
+        # for i in range(bsz):
+        #     logits[i][labels]
+
+        _, outputs = torch.sort(logits, dim=1, descending=True)
+        _, outputs = torch.sort(outputs, dim=1)
+        ranks = outputs[torch.arange(bsz), label].detach().cpu() + 1
+        
+
+        return dict(ranks = np.array(ranks))
+
+    def validation_step(self, batch, batch_idx):
+        result = self._eval(batch, batch_idx)
+        return result
+
+    def validation_epoch_end(self, outputs) -> None:
+        ranks = np.concatenate([_['ranks'] for _ in outputs])
+        total_ranks = ranks.shape[0]
+
+        if not self.args.pretrain:
+            l_ranks = ranks[np.array(list(np.arange(0, total_ranks, 2)))]
+            r_ranks = ranks[np.array(list(np.arange(0, total_ranks, 2))) + 1]
+            self.log("Eval/lhits10", (l_ranks<=10).mean())
+            self.log("Eval/rhits10", (r_ranks<=10).mean())
+
+        hits20 = (ranks<=20).mean()
+        hits10 = (ranks<=10).mean()
+        hits3 = (ranks<=3).mean()
+        hits1 = (ranks<=1).mean()
+
+        self.log("Eval/hits10", hits10)
+        self.log("Eval/hits20", hits20)
+        self.log("Eval/hits3", hits3)
+        self.log("Eval/hits1", hits1)
+        self.log("Eval/mean_rank", ranks.mean())
+        self.log("Eval/mrr", (1. / ranks).mean())
+        self.log("hits10", hits10, prog_bar=True)
+        self.log("hits1", hits1, prog_bar=True)
+
+            
+    
+
+    def test_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # ranks = self._eval(batch, batch_idx)
+        result = self._eval(batch, batch_idx)
+        # self.log("Test/ranks", np.mean(ranks))
+
+        return result
+
+    def test_epoch_end(self, outputs) -> None:
+        ranks = np.concatenate([_['ranks'] for _ in outputs])
+
+        hits20 = (ranks<=20).mean()
+        hits10 = (ranks<=10).mean()
+        hits3 = (ranks<=3).mean()
+        hits1 = (ranks<=1).mean()
+
+       
+        self.log("Test/hits10", hits10)
+        self.log("Test/hits20", hits20)
+        self.log("Test/hits3", hits3)
+        self.log("Test/hits1", hits1)
+        self.log("Test/mean_rank", ranks.mean())
+        self.log("Test/mrr", (1. / ranks).mean())
+
+    
+    def _freaze_attention(self):
+        for k, v in self.model.named_parameters():
+            if "word" not in k:
+                v.requires_grad = False
+            else:
+                print(k)
+    
+    def _freaze_word_embedding(self):
+        for k, v in self.model.named_parameters():
+            if "word" in k:
+                print(k)
+                v.requires_grad = False
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser = BaseLitModel.add_to_argparse(parser)
+
+        parser.add_argument("--label_smoothing", type=float, default=0.1, help="")
+        parser.add_argument("--bce", type=int, default=0, help="")
+        return parser
+
+class KNNKGEPretrainLitModel(KNNKGELitModel):
+    def __init__(self, args, tokenizer, **kwargs):
+        super().__init__(args, tokenizer, **kwargs)
+        self._freaze_attention()
+    
+    def on_test_epoch_start(self) -> None:
+        file_folder = f"output/{self.args.dataset}/knnkge_pretrain_model"
+        print(f"saving the model to {file_folder}...")
+
+        self.model.save_pretrained(file_folder)
+        self.tokenizer.save_pretrained(file_folder)
 
 
 
-
-class TransformerLitModel(BaseLitModel):
-    def __init__(self, model:BartKGC, args, tokenizer=None):
-        super().__init__(model, args)
+class KGT5LitModel(BaseLitModel):
+    def __init__(self, args, tokenizer=None, **kwargs):
+        super().__init__(args)
         # self.loss_fn = nn.BCEWithLogitsLoss()
         self.save_hyperparameters(ignore=['model'])
         # bug, cannot fix
         self.args = args
-        self.model = model
-        self.loss_fn = nn.CrossEntropyLoss()
-        # self.loss_fn = multilabel_categorical_crossentropy
+        self.model = self._init_model()
         self.best_acc = 0
-        self.first = True
         
-        # load trie for each dataset
-        # with open(f"{args.data_dir}/trie.pkl", "rb") as file:
-        #     self.trie = pickle.load(file)
         self.tokenizer = tokenizer
-        self.entity_trie = get_trie(args, tokenizer=tokenizer)
+        self.entity_trie = None
+        if args.prefix_tree_decode:
+            self.entity_trie = get_trie(args, tokenizer=tokenizer)
         
-        # dict , {entity_id :  eos_token_id + enttiy_token_id}
-        self.id2ent = self._get_id2ent()
-
-
-        self.last_filter_ent = []
-
-
         # resize the word embedding layer
         self.model.resize_token_embeddings(len(self.tokenizer))
 
@@ -272,6 +461,10 @@ class TransformerLitModel(BaseLitModel):
 
 
         self._eval = self._eval_1
+    
+    def _init_model(self):
+        model = T5KBQAModel.from_pretrained(self.args.model_name_or_path)
+        return model
 
     def forward(self, x):
         return self.model(x)
@@ -279,27 +472,13 @@ class TransformerLitModel(BaseLitModel):
     def training_step(self, batch, batch_idx):  # pylint: disable=unused-argument
         # batch.pop("filter_ent_ids")
         bsz = batch['input_ids'].shape[0]
-        loss = self.model(**batch, use_cache=False, return_dict=True).loss
+        loss = self.model(**batch).loss
         self.log("Train/loss", loss)
         return loss
         
     def _get_ranks(self, outputs, labels):
         bsz = len(labels)
-        
         tmp = []
-        # outputs = [self.decode(_) for _ in outputs]
-        # # for o in outputs:
-        # #     t = self.decode(output_ids = o)
-        # #     tmp.append(t)
-        # # outputs = tmp
-        # labels = self.decode(output_ids = labels)
-        # outputs = torch.cat([outputs[...,1:], torch.full(outputs.shape[:-1], self.tokenizer.pad_token_id)])
-        # labels = [_
-        # tmp = []
-        # for o in ent:
-        #     t = self.decode(output_ids = o)
-        #     tmp.append(t)
-        # ent = tmp
         ranks = []
         for i in range(bsz):
             # get the real entity
@@ -328,40 +507,37 @@ class TransformerLitModel(BaseLitModel):
         # decoder_input_ids = batch.pop("decoder_input_ids")
         # ent id for filter
         # ent = batch.pop("filter_ent_ids")
-        ent = [self.filter_hr_to_ent[tuple(lmap(int,_))] for _ in batch.pop("hr_pair")]
-        target_entity_ids = batch.pop("target_entity_id")
         bsz = batch['input_ids'].shape[0]
 
         topk = self.args.beam_size
         prefix_allowed_tokens_fn = None
-        prefix_allowed_tokens_fn = lambda batch_id, sent: self.entity_trie.get(sent.tolist())
-        # elif self.args.prefix_tree_decode:
-        #     prefix_allowed_tokens_fn = get_end_to_end_prefix_allowed_tokens_fn_hf(
-        #         tokenizer=self.tokenizer,
-        #         sentences=get_entity_spans_pre_processing(input_sentences),
-        #         mention_trie=self.mention_trie,
-        #         candidates_trie=self.entity_trie, 
-        #     )
-        # assert  not (self.args.prefix_tree_decode ^ (prefix_allowed_tokens_fn is None)), "use prefix tree decode must determine fn"
-
-        
-        # outputs = self.model.generate(
-        #     **batch,
-        #     prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
-        #     num_beams=topk, num_return_sequences=topk,
-        #     output_scores=True,
-        #     max_length=64,
-        #     forced_bos_token_id=self.tokenizer.bos_token_id,
-        #     decoder_start_token_id=self.tokenizer.bos_token_id,
-        #     use_cache=True,
-        # ).view(bsz, topk, -1).cpu()
+        if self.entity_trie:
+            prefix_allowed_tokens_fn = lambda batch_id, sent: self.entity_trie.get(sent.tolist())
         outputs = self.model.generate(
             **batch,
-            # prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+            prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
             num_beams=topk, num_return_sequences=topk,
+            top_p=1.,
             max_length=64,
             use_cache=True,
         ).view(bsz, topk, -1).cpu()
+        src = self.decode(labels)
+        outputs = [self.decode(o) for o in outputs]
+        ranks = []
+        for i in range(bsz):
+            in_flag = False
+            for j in range(topk):
+                if outputs[i][j] == src[i]:
+                    ranks.append(j)
+                    in_flag = True
+                    break
+            if not in_flag: ranks.append(10000)
+
+        return dict(ranks=ranks)
+            
+
+
+
         # if batch_idx == 10:
     
         # ranks = self._get_ranks(outputs, labels, ent)
@@ -384,7 +560,7 @@ class TransformerLitModel(BaseLitModel):
         #         # # print(f"true label : \t{label_text[i]}")
         #         # print("*"*20)
 
-        return dict(outputs=outputs, labels=labels.cpu())
+        # return dict(outputs=outputs, labels=labels.cpu())
 
 
     def _eval_1(self, batch, batch_idx):
@@ -473,7 +649,7 @@ class TransformerLitModel(BaseLitModel):
         return dict(unfiltered_ranks = np.array(ranks_in_batch['unfiltered']+1), filtered_ranks = np.array(ranks_in_batch['filtered'])+1)
 
     def validation_step(self, batch, batch_idx):
-        result = self._eval(batch, batch_idx)
+        result = self._eval_normal(batch, batch_idx)
         # self.log("Eval/loss", np.mean(ranks))
         return result
 
@@ -481,22 +657,18 @@ class TransformerLitModel(BaseLitModel):
             
         # labels = [_ for o in outputs for _ in o['labels']]
         # outputs = [_ for o in outputs for _ in o['outputs']]
+        keys = outputs[0].keys()
+        ranks = np.concatenate([o['ranks'] for o in outputs], axis=0)
         # ranks = self._get_ranks(outputs, labels)
         # ranks = np.array(ranks)
         # hits20 = (ranks<=20).mean()
         # hits10 = (ranks<=10).mean()
         # hits3 = (ranks<=3).mean()
         # hits1 = (ranks<=1).mean()
-        unfiltered_ranks = [_ for o in outputs for _ in o['unfiltered_ranks']]
-        filtered_ranks = [_ for o in outputs for _ in o['filtered_ranks']]
-        unfiltered_ranks = np.concatenate(unfiltered_ranks)
-        filtered_ranks = np.concatenate(filtered_ranks)
 
         for hit in [1, 3, 10]:
-            r = (unfiltered_ranks <= hit).mean()
-            self.log(f"Eval/unfiltered_hits{hit}", r)
-            r = (filtered_ranks <= hit).mean()
-            self.log(f"Eval/filtered_hits{hit}", r)
+            r = (ranks <= hit).mean()
+            self.log(f"hits{hit}", r, prog_bar=True)
 
         # self.log("Eval/hits10", hits10, prog_bar=True, on_epoch=True)
         # self.log("Eval/hits1", hits1)
@@ -505,47 +677,19 @@ class TransformerLitModel(BaseLitModel):
 
     def test_step(self, batch, batch_idx):  # pylint: disable=unused-argument
         # ranks = self._eval(batch, batch_idx)
-        result = self._eval(batch, batch_idx)
+        result = self.validation_step(batch, batch_idx)
         # self.log("Test/ranks", np.mean(ranks))
 
         return result
         # return {"test_rank": np.array(ranks)}
 
     def test_epoch_end(self, outputs) -> None:
-        # ranks = np.concatenate([o["test_rank"] for o in outputs]).reshape(-1)
-        unfiltered_ranks = [_ for o in outputs for _ in o['unfiltered_ranks']]
-        filtered_ranks = [_ for o in outputs for _ in o['filtered_ranks']]
-        unfiltered_ranks = np.concatenate(unfiltered_ranks)
-        filtered_ranks = np.concatenate(filtered_ranks)
-
-        for hit in [1, 3, 10]:
-            r = (unfiltered_ranks <= hit).mean()
-            self.log(f"Test/unfiltered_hits{hit}", r)
-            r = (filtered_ranks <= hit).mean()
-            self.log(f"Test/filtered_hits{hit}", r)
-
-        # labels = [_ for o in outputs for _ in o['labels']]
-        # outputs = [_ for o in outputs for _ in o['outputs']]
-        # ranks = self._get_ranks(outputs, labels)
-        # ranks = np.array(ranks)
-
-        # hits20 = (ranks<=20).mean()
-        # hits10 = (ranks<=10).mean()
-        # hits3 = (ranks<=3).mean()
-        # hits1 = (ranks<=1).mean()
-
-       
-        # self.log("Test/hits10", hits10)
-        # self.log("Test/hits20", hits20)
-        # self.log("Test/hits3", hits3)
-        # self.log("Test/hits1", hits1)
+        self.validation_epoch_end(outputs)
+        
 
     def configure_optimizers(self):
         no_decay_param = ["bias", "LayerNorm.weight"]
 
-        #! trick , should be put at on_eval_start
-        # for filter entity to use in the test mode
-        self.filter_hr_to_ent = self.trainer.datamodule.filter_hr_to_ent
 
         optimizer_group_parameters = [
             {"params": [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay_param)], "weight_decay": self.args.weight_decay},
@@ -576,10 +720,80 @@ class TransformerLitModel(BaseLitModel):
         return parser
     
 
-    def _get_id2ent(self):
-        id2ent = []
-        with open(os.path.join(f"dataset/{self.args.dataset}", "entity2id.json"), 'r') as f:
-            self.id2ent = json.load(f)
-        # tokenize and add eos token to id2ent
-        id2ent = {int(k):[self.tokenizer.eos_token_id] + self.tokenizer(" ".join(v)).input_ids for k, v in self.id2ent.items()}
-        return id2ent
+class KGBartLitModel(KGT5LitModel):
+    def __init__(self, args, tokenizer=None, **kwargs) -> None:
+        super().__init__(args, tokenizer)
+
+        if args.use_ce_loss:
+            self.model.loss_fn = nn.CrossEntropyLoss()
+        
+    def _init_model(self):
+        model = BartKGC.from_pretrained(self.args.model_name_or_path)
+        if self.args.use_ce_loss:
+            model.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=self.args.label_smoothing)
+        else:
+            model.loss_fn = SparseMax(20)
+        return model
+    
+    @staticmethod
+    def add_to_argparse(parser):
+        parser = BaseLitModel.add_to_argparse(parser)
+        parser.add_argument("--label_smoothing", type=float, default=0.1, help="")
+        parser.add_argument("--prefix_tree_decode", type=int, default=0, help="")
+        parser.add_argument("--warm_up_radio", type=float, default=0.1, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--beam_size", type=int, default=60, help="")
+        parser.add_argument("--use_ce_loss", type=int, default=0, help="")
+        
+        return parser
+    
+    def _eval_normal(self, batch, batch_idx, ):
+        #TODO add filiter
+        labels = batch.pop("labels")
+        batch_data = batch.pop("batch_data")
+        # decoder_input_ids = batch.pop("decoder_input_ids")
+        # ent id for filter
+        # ent = batch.pop("filter_ent_ids")
+        bsz = batch['input_ids'].shape[0]
+
+        hr_t = self.trainer.datamodule.filter_hr_to_t
+        tr_h = self.trainer.datamodule.filter_tr_to_h
+
+        entity2id = self.trainer.datamodule.entity2id
+
+        topk = self.args.beam_size
+        prefix_allowed_tokens_fn = None
+        if self.entity_trie:
+            prefix_allowed_tokens_fn = lambda batch_id, sent: self.entity_trie.get(sent.tolist())
+        outputs = self.model.generate(
+            **batch,
+            # prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+            num_beams=topk, num_return_sequences=topk,
+            top_p=1.,
+            max_length=64,
+            use_cache=True,
+        ).view(bsz, topk, -1).cpu()
+        src = self.decode(labels)
+        outputs = [self.decode(o) for o in outputs]
+        ranks = []
+        for i in range(bsz):
+            in_flag = False
+            cnt = 1
+            for j in range(topk):
+                if outputs[i][j] == src[i]:
+                    ranks.append(cnt)
+                    in_flag = True
+                    break
+                if outputs[i][j] in entity2id:
+                    target_id = entity2id[outputs[i][j]]
+                    if not batch_data[i].inverse:
+                        if target_id in hr_t[batch_data[i].hr]:
+                            continue
+                    else:
+                        if target_id in tr_h[batch_data[i].hr]:
+                            continue
+                
+                cnt += 1
+
+            if not in_flag: ranks.append(10000)
+
+        return dict(ranks=ranks)

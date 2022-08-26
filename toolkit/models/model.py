@@ -1,4 +1,5 @@
 from logging import debug
+from turtle import forward
 from transformers import (
     T5ForConditionalGeneration,
     BartForConditionalGeneration
@@ -24,6 +25,14 @@ def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int, decoder_start
 
     return shifted_input_ids
 
+from transformers.models.bert.modeling_bert import BertForMaskedLM
+
+
+class KNNKGEModel(BertForMaskedLM):
+    @staticmethod
+    def add_to_argparse(parser):
+        parser.add_argument("--pretrain", type=int, default=0, help="")
+        return parser
 
 class T5KGC(T5ForConditionalGeneration):
 
@@ -36,12 +45,56 @@ class T5KGC(T5ForConditionalGeneration):
         parser.add_argument("--pretrain", type=int, default=0, help="")
         
         return parser
-
-class BartKGC(BartForConditionalGeneration):
+    
+class T5KBQAModel(T5ForConditionalGeneration):
 
     def __init__(self, config):
         super().__init__(config)
         self.loss_fn = nn.CrossEntropyLoss()
+
+   
+    def add_to_argparse(parser):
+        parser.add_argument("--pretrain", type=int, default=0, help="")
+        
+        return parser
+
+class Sparsemax(nn.Module):
+    """Sparsemax loss"""
+
+    def __init__(self, k_sparse=1):
+        super(Sparsemax, self).__init__()
+        self.k_sparse = k_sparse
+        
+    def forward(self, preds, labels):
+        """
+        Args:
+            preds (torch.Tensor):  [batch_size, number_of_logits]
+            labels (torch.Tensor): [batch_size] index, not ont-hot
+        Returns:
+            torch.Tensor
+        """
+        preds = preds.reshape(preds.size(0), -1) # [batch_size, -1]
+        topk = preds.topk(self.k_sparse, dim=1)[0] # [batch_size, k_sparse]
+        
+        # log(sum(exp(topk)))
+        pos_loss = torch.logsumexp(topk, dim=1)
+        # s_t
+        neg_loss = torch.gather(preds, 1, labels[:, None].expand(-1, preds.size(1)))[:, 0]
+        
+        return (pos_loss - neg_loss).mean()
+
+class BartKGC(BartForConditionalGeneration):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.loss_fn = Sparsemax(10)
+        self.loss_fn = nn.CrossEntropyLoss()
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser.add_argument("--use_label_type", type=int, default=0, help="")
+        parser.add_argument("--pretrain", type=int, default=0, help="")
+        
+        return parser
 
     def forward(
         self,
@@ -67,6 +120,7 @@ class BartKGC(BartForConditionalGeneration):
             Labels for computing the masked language modeling loss. Indices should either be in ``[0, ...,
             config.vocab_size]`` or -100 (see ``input_ids`` docstring). Tokens with indices set to ``-100`` are ignored
             (masked), the loss is only computed for the tokens with labels in ``[0, ..., config.vocab_size]``.
+
         Returns:
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
@@ -98,6 +152,10 @@ class BartKGC(BartForConditionalGeneration):
 
         masked_lm_loss = None
         if labels is not None:
+            # loss_fct = CrossEntropyLoss()
+            mask = labels.unsqueeze(2).expand(lm_logits.shape)
+            lm_logits = torch.masked_select(lm_logits, mask !=-100)
+            labels = torch.masked_select(labels, labels != -100)
             masked_lm_loss = self.loss_fn(lm_logits.view(-1, self.config.vocab_size), labels.view(-1))
 
         if not return_dict:
@@ -115,10 +173,3 @@ class BartKGC(BartForConditionalGeneration):
             encoder_hidden_states=outputs.encoder_hidden_states,
             encoder_attentions=outputs.encoder_attentions,
         )
-    
-    @staticmethod
-    def add_to_argparse(parser):
-        parser.add_argument("--use_label_type", type=int, default=0, help="")
-        parser.add_argument("--pretrain", type=int, default=0, help="")
-        
-        return parser

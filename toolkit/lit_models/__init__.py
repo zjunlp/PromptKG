@@ -1,2 +1,2 @@
-from .transformer import TransformerLitModel, TransformerSimKGC
+from .transformer import *
 from .base import *

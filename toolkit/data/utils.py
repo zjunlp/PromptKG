@@ -2,8 +2,6 @@ import inspect
 
 
 
-def lmap(a, b):
-    return list(map(a,b))
 
 def cache_results(_cache_fp, _refresh=False, _verbose=1):
     r"""

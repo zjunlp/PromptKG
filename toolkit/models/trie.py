@@ -202,18 +202,19 @@ def get_trie(args, tokenizer):
 
             return trie
     
-    d = "entity2id.json"
+    d = "kg.txt"
     with open(f"dataset/{args.dataset}/{d}", "r") as file:
         idx = 0
         total_entity_ids = [] 
         num_error_ids = 0
-        lines = json.load(file).values()
+        lines = file.readlines()
 
 
         for line in tqdm(lines, desc="tokenize the prefix tree"):
-            entity_name = " ".join(line)
+            h,r,t = line.split("\t")
+            entity_name = tokenizer.sep_token.join([h,r,t])
             try:
-                entity_ids = tokenizer(" "+entity_name, add_special_tokens=True, max_length=args.max_seq_length,truncation=True).input_ids
+                entity_ids = tokenizer(entity_name, add_special_tokens=True, max_length=args.max_seq_length,truncation=True).input_ids
             except:
                 num_error_ids += 1
             # assert entity_ids not in total_entity_ids, print(entity_name)
@@ -231,7 +232,7 @@ def get_trie(args, tokenizer):
             trie = Trie([[eos_id] + _ for _ in total_entity_ids])
         else:
             # t5 unbelieveable
-            trie = Trie([[0,32099] + _ for _ in total_entity_ids])
+            trie = Trie([[tokenizer.pad_token_id] + _ for _ in total_entity_ids])
     
     with open(path, "wb") as file:
         pickle.dump(trie, file)

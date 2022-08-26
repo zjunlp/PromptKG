@@ -213,7 +213,7 @@ class SimKGCModel(nn.Module, ABC):
         self.batch_size = len(batch_dict['batch_data'])
         batch_exs = batch_dict['batch_data']
         # batch_size x num_neg
-        pre_batch_logits = hr_vector.mm(self.pre_batch_vectors.clone().t())
+        pre_batch_logits = hr_vector.mm(self.pre_batch_vectors.clone().t().float())
         pre_batch_logits *= self.log_inv_t.exp() * self.args.pre_batch_weight
         if self.pre_batch_exs[-1] is not None:
             pre_triplet_mask = construct_mask(batch_exs, self.pre_batch_exs).to(hr_vector.device)

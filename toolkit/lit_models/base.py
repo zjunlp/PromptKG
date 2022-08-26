@@ -35,10 +35,9 @@ class BaseLitModel(pl.LightningModule):
     Generic PyTorch-Lightning class that must be initialized with a PyTorch module.
     """
 
-    def __init__(self, args, data_config=None):
+    def __init__(self, args):
         super().__init__()
         self.args = Config(vars(args)) if args is not None else {}
-        self.data_config = data_config
 
         optimizer = self.args.get("optimizer", OPTIMIZER)
         self.optimizer_class = getattr(torch.optim, optimizer)

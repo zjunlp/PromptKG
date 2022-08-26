@@ -66,6 +66,15 @@ class LabelSmoothing(nn.Module):
         return loss.mean()
 
 
+# def construct_self_negative_mask(exs: List) -> torch.tensor:
+#     mask = torch.ones(len(exs))
+#     for idx, ex in enumerate(exs):
+#         head_id, relation = ex.hr[0], ex.hr[1]
+#         neighbor_ids = train_triplet_dict.get_neighbors(head_id, relation)
+#         if head_id in neighbor_ids:
+#             mask[idx] = 0
+#     return mask.bool()
+
 def construct_mask(row_exs: List, col_exs: List = None) -> torch.tensor:
     # exs = examples
     positive_on_diagonal = col_exs is None

@@ -35,6 +35,10 @@ class Example:
     t: int
     inverse: bool
 
+@dataclass
+class PretrainExample:
+    e: int
+
 class KGCDataset(Dataset):
     def __init__(self, 
                 args,
@@ -52,8 +56,35 @@ class KGCDataset(Dataset):
         with open(f"./dataset/{self.args.dataset}/{self.mode}.tsv") as file:
             for line in file.readlines():
                 h,r,t = list(map(int,line.strip().split()))
-                data.append(Example(hr=[h,r],t=t, inverse=False))
-                data.append(Example(hr=[t,r],t=h, inverse=True))
+                data.append(Example(hr=(h,r),t=t, inverse=False))
+                data.append(Example(hr=(t,r),t=h, inverse=True))
+        
+        return data
+
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, index):
+        return self.data[index]
+
+class PretrainKGCDataset(Dataset):
+    def __init__(self, 
+                args,
+                mode
+                ):
+        super().__init__()
+        dataset_name = args.dataset
+        self.args = args
+        # self.data = self.loadData(filename, max_points)
+        self.mode = mode
+        self.data = self.loadData()
+
+    def loadData(self):
+        data = []
+        with open(f"./dataset/{self.args.dataset}/entity2text.txt") as file:
+            for line in file.readlines():
+                e, text = line.strip().split("\t")
+                data.append(int(e))
         
         return data
 

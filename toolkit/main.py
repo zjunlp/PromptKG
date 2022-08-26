@@ -65,33 +65,45 @@ def _setup_parser():
     parser.add_argument("--help", "-h", action="help")
     return parser
 
+metric_list = {"knnkge" : "hits10",
+                "simkgc" : "acc1",
+                "t5kbqa" : "hits1"}
 
 def main():
     parser = _setup_parser()
     args = parser.parse_args()
+
+    # use all the available gpus
+    args.gpus = torch.cuda.device_count()
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     pl.seed_everything(args.seed)
 
     data_class = _import_class(f"data.{args.data_class}")
-    model_class = _import_class(f"models.{args.model_class}")
     litmodel_class = _import_class(f"lit_models.{args.lit_model_class}")
 
-    config = AutoConfig.from_pretrained(args.model_name_or_path)
-    # update parameters
-    config.label_smoothing = args.label_smoothing
+    # config = AutoConfig.from_pretrained(args.model_name_or_path)
+    # # update parameters
+    # config.label_smoothing = args.label_smoothing
     
 
     # model = model_class.from_pretrained(args.model_name_or_path, config=config)
     # perfered , warp the transformers encoder
-    model = model_class(args)
+    method_name = args.model_class.lower().replace("model","")
+    if method_name in metric_list:
+        metric_name = metric_list[method_name]
+    else:
+        metric_name = "hits10"
+    # model = model_class(args) if method
     data = data_class(args)
     tokenizer = data.tokenizer
 
 
+
+
     
-    lit_model = litmodel_class(args=args, model=model, tokenizer=tokenizer)
+    lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
     # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
     # if args.checkpoint:
@@ -112,8 +124,8 @@ def main():
     # metric_name = "Eval/hits10" if not args.pretrain else  "Train/loss"
 
 
-    early_callback = pl.callbacks.EarlyStopping(monitor="acc1", mode="max", patience=4)
-    model_checkpoint = pl.callbacks.ModelCheckpoint(monitor="acc1", mode="max",
+    early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
+    model_checkpoint = pl.callbacks.ModelCheckpoint(monitor=metric_name, mode="max",
         filename='{epoch}-{acc1:.2f}',
         dirpath=os.path.join("output", args.dataset),
         save_weights_only=True,
@@ -126,6 +138,9 @@ def main():
 
     # args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
+    # make sure use one device to test
+    args.devices = 1
+    tester = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
     
     
     if args.checkpoint:
@@ -134,13 +149,14 @@ def main():
         return
 
     trainer.fit(lit_model, datamodule=data)
+    result = tester.test(lit_model, data)
 
     path = model_checkpoint.best_model_path
 
     # lit_model.load_state_dict(torch.load(path)["state_dict"])
     # print(path)
 
-    result = trainer.test(lit_model, data)
+    # result = trainer.test(lit_model, data)
     print(result)
 
 
