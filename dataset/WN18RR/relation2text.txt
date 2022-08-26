@@ -1,0 +1,11 @@
+0	usage domain of member
+1	has part
+2	also see
+3	hypernym
+4	domain topic synset of
+5	derivationally related form
+6	similar to
+7	instance hypernym
+8	group verb
+9	meronym member
+10	region domain of member
