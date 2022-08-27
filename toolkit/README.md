@@ -27,6 +27,18 @@ Install the denpency.
 pip install -r requirements.txt
 ```
 
+## Step3
+
+Install our preprocessed datasets and put them into the `dataset` folder.
+
+| Dataset | Google Drive                                                 | Baidu Cloud |
+| ------- | ------------------------------------------------------------ | ----------- |
+| WN18RR  | [google drive](https://drive.google.com/drive/folders/1k5mT3d7fldVSSyAYH5KWv3_BI3B2-BXJ?usp=sharing) |             |
+
+
+
+
+
 ## Run your first experiment
 
 We first provide `link-prediction` as our example downstream task.
@@ -42,5 +54,3 @@ For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command belo
 ```shell
 bash ./scripts/knnkge/fb15k.sh
 ```
-
-
