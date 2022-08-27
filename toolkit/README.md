@@ -6,6 +6,15 @@
 
 # Implemented Models
 
+| Models | KGC  | QA   |
+| ------ | ---- | ---- |
+| GenKGC | √    |      |
+| KGT5   | √    | √    |
+| KnnKGE | √    |      |
+| SimKGC | √    |      |
+
+
+
 
 # Quick Start
 
@@ -54,3 +63,14 @@ For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command belo
 ```shell
 bash ./scripts/knnkge/fb15k.sh
 ```
+
+## Framework
+
+<img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework.jpg" width="550px">
+
+
+
+## TODO 
+
+- [ ] add essemble-model for using
+- [ ] add more kgc models based on pretrained language models
