@@ -1,7 +1,12 @@
+<div align="center">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
+    **A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models.**
+</div>
 
-<h1 align="center">
-    <p>An Open Source Library for Downstream tasks of Knowledge Graphs Based on Pre-trained Language Models</p>
-</h1>
+
+
+------
+
 
 
 # Implemented Models
@@ -43,6 +48,7 @@ Install our preprocessed datasets and put them into the `dataset` folder.
 | Dataset | Google Drive                                                 | Baidu Cloud |
 | ------- | ------------------------------------------------------------ | ----------- |
 | WN18RR  | [google drive](https://drive.google.com/drive/folders/1k5mT3d7fldVSSyAYH5KWv3_BI3B2-BXJ?usp=sharing) |             |
+| MetaQA  | [google drive](https://drive.google.com/drive/folders/1q4kph9nd4ADjvkPIZvAwYbqza7o7DFt9?usp=sharing) |             |
 
 
 
