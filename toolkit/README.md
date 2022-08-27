@@ -13,12 +13,14 @@
 
 # Implemented Models
 
-| Models | KGC  | QA   |
-| ------ | ---- | ---- |
-| GenKGC | √    |      |
-| KGT5   | √    | √    |
-| KnnKGE | √    |      |
-| SimKGC | √    |      |
+
+
+| Models | KGC  |  QA  |
+| -----: | :--: | :--: |
+| GenKGC |  √   |      |
+|   KGT5 |  √   |  √   |
+| KnnKGE |  √   |      |
+| SimKGC |  √   |      |
 
 
 
@@ -37,13 +39,13 @@ conda create -n promptkg python=3.8
 
 ### **Step2**
 
-Install the denpency.
+Install the dependence.
 
 ```shell
 pip install -r requirements.txt
 ```
 
-## Step3
+### Step3
 
 Install our preprocessed datasets and put them into the `dataset` folder.
 
