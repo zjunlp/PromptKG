@@ -30,10 +30,33 @@ Use the script in the `scripts` fold. Take `fb15k-237` dataset for example.
 If you use the code, please cite the following paper:
 
 ```bibtex
-@article{xie2022discrimination,
-  title={From Discrimination to Generation: Knowledge Graph Completion with Generative Transformer},
-  author={Xie, Xin and Zhang, Ningyu and Li, Zhoubo and Deng, Shumin and Chen, Hui and Xiong, Feiyu and Chen, Mosha and Chen, Huajun},
-  journal={arXiv preprint arXiv:2202.02113},
-  year={2022}
+@inproceedings{DBLP:conf/www/XieZLDCXCC22,
+  author    = {Xin Xie and
+               Ningyu Zhang and
+               Zhoubo Li and
+               Shumin Deng and
+               Hui Chen and
+               Feiyu Xiong and
+               Mosha Chen and
+               Huajun Chen},
+  editor    = {Fr{\'{e}}d{\'{e}}rique Laforest and
+               Rapha{\"{e}}l Troncy and
+               Elena Simperl and
+               Deepak Agarwal and
+               Aristides Gionis and
+               Ivan Herman and
+               Lionel M{\'{e}}dini},
+  title     = {From Discrimination to Generation: Knowledge Graph Completion with
+               Generative Transformer},
+  booktitle = {Companion of The Web Conference 2022, Virtual Event / Lyon, France,
+               April 25 - 29, 2022},
+  pages     = {162--165},
+  publisher = {{ACM}},
+  year      = {2022},
+  url       = {https://doi.org/10.1145/3487553.3524238},
+  doi       = {10.1145/3487553.3524238},
+  timestamp = {Thu, 18 Aug 2022 10:55:04 +0200},
+  biburl    = {https://dblp.org/rec/conf/www/XieZLDCXCC22.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 ```
