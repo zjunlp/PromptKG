@@ -97,7 +97,7 @@ class BaseKGCDataModule(pl.LightningDataModule):
     Learn more at https://pytorch-lightning.readthedocs.io/en/stable/datamodules.html
     """
 
-    def __init__(self, args: argparse.Namespace = None) -> None:
+    def __init__(self, args: argparse.Namespace = None, lama: bool=False) -> None:
         super().__init__()
         self.args = Config(vars(args)) if args is not None else {}
         self.batch_size = self.args.get("batch_size", BATCH_SIZE)
@@ -105,10 +105,11 @@ class BaseKGCDataModule(pl.LightningDataModule):
 
 
         # base setting
-        self.entity2text = self.get_entity_to_text()
-        self.relation2text = self.get_relation_to_text()
-        self.num_entity = len(self.entity2text.keys())
-        self.num_relation = len(self.relation2text.keys())
+        if not lama:
+            self.entity2text = self.get_entity_to_text()
+            self.relation2text = self.get_relation_to_text()
+            self.num_entity = len(self.entity2text.keys())
+            self.num_relation = len(self.relation2text.keys())
     
     def get_entity_to_text(self):
         entity2text = {}
@@ -191,6 +192,10 @@ class BaseKGCDataModule(pl.LightningDataModule):
         )
         parser.add_argument(
             "--dataset", type=str, default="FB15k-237", help="Number of additional processes to load data."
+        )
+        parser.add_argument(
+            "--subdataset", type=str, default=None, choices=['Google_RE', 'Squad', 'TREx', 'ConceptNet', None], 
+            help="Choose a subdataset in [Google_RE, Squad, TREx, ConceptNet] of LAMA or None (represents the full dataset)."
         )
         return parser
 

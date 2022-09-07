@@ -8,6 +8,7 @@ from collections import defaultdict
 from enum import Enum
 import time
 import random
+from sqlalchemy import true
 import torch
 from sklearn.cluster import KMeans
 
@@ -17,7 +18,7 @@ import numpy as np
 
 from models.utils import construct_mask
 
-from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset
+from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset, LAMADataset
 from .base_data_module import BaseKGCDataModule, QADataModule
 
 def lmap(f, x):
@@ -25,8 +26,8 @@ def lmap(f, x):
 
 
 class KGT5DataModule(BaseKGCDataModule):
-    def __init__(self, args) -> None:
-        super().__init__(args)
+    def __init__(self, args, lama: bool=False) -> None:
+        super().__init__(args, lama)
         if "T5" in args.model_name_or_path:
             self.tokenizer = T5Tokenizer.from_pretrained(self.args.model_name_or_path)
         else:
@@ -141,6 +142,46 @@ class KGT5DataModule(BaseKGCDataModule):
 
     def test_dataloader(self):
         return DataLoader(self.data_test, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="test"), pin_memory=True)
+
+
+class LAMADataModule(KGT5DataModule):
+    def __init__(self, args) -> None:
+        super().__init__(args, lama=True)
+
+    def setup(self, stage=None):
+        now_time = time.time()
+        print("setup data for each process...")
+        if stage == "fit" and False:
+            self.data_train = LAMADataset(self.args)
+            self.data_val = LAMADataset(self.args)
+        else:
+            self.data_test = LAMADataset(self.args)
+
+        print("finished data processing... costing {}s...".format(time.time() - now_time))
+
+    def collate_fn(self, items, mode):
+        inputs = [item[1] for item in items]
+        outputs = [item[2] for item in items]
+        inputs_tokenized = self.tokenizer(inputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+        outputs_tokenized = self.tokenizer(outputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+        input_ids, attention_mask = inputs_tokenized.input_ids, inputs_tokenized.attention_mask
+        labels, labels_attention_mask = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
+        # for labels, set -100 for padding
+        if mode == "train": labels[labels==self.tokenizer.pad_token_id] = -100
+        # labels = -100 * torch.ones(labels.shape, dtype=torch.long)
+        if mode == "train":
+            return dict(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        else:
+            return dict(input_ids=input_ids, attention_mask=attention_mask, labels=labels, batch_data=items)
+
+    def train_dataloader(self):
+        raise NotImplementedError
+
+    def val_dataloader(self):
+        raise NotImplementedError
+    
+    def test_dataloader(self):
+        return DataLoader(self.data_test, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="test"), pin_memory=True, drop_last=False)
 
 
 class MetaQADataModule(QADataModule):
