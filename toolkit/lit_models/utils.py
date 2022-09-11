@@ -193,7 +193,9 @@ class EMA(pl.Callback):
           resource. In addition, we want to avoid duplicated operations in ranks != 0 to reduce jitter and improve
           performance.
     """
-    def __init__(self, decay: float = 0.9999, ema_device: Optional[Union[torch.device, str]] = None, pin_memory=True):
+    def __init__(self, decay = 0.9999,
+        ema_device = None,
+        pin_memory=True):
         super().__init__()
         self.decay = decay
         self.ema_device: str = f"{ema_device}" if ema_device else None  # perform ema on different device from the model
@@ -267,3 +269,136 @@ class EMA(pl.Callback):
     ) -> None:
         self._ema_state_dict_ready = callback_state["_ema_state_dict_ready"]
         self.ema_state_dict = callback_state["ema_state_dict"]
+
+class LAMA_metrics():
+    def __init__(self) -> None:
+        pass
+
+    def get_ranking(self, log_probs, masked_indices, vocab, label_index = None, index_list = None, topk = 1000, P_AT = 10, print_generation=False):
+
+        experiment_result = {}
+
+        log_probs, index_max_probs, value_max_probs = self.__max_probs_values_indices(masked_indices, log_probs, topk=topk)
+        result_masked_topk = self.__print_top_k(value_max_probs, index_max_probs, vocab, topk, index_list)
+        experiment_result['topk'] = result_masked_topk
+
+        MRR = 0.
+        P_AT_X = 0.
+        P_AT_1 = 0.
+        PERPLEXITY = None
+
+        if label_index is not None:
+
+            # check if the labe_index should be converted to the vocab subset
+            if index_list is not None:
+                label_index = index_list.index(label_index)
+
+            query = torch.full(value_max_probs.shape, label_index, dtype=torch.long).numpy().astype(int)
+            ranking_position = (index_max_probs==query).nonzero()
+
+            # LABEL PERPLEXITY
+            tokens = torch.from_numpy(np.asarray(label_index))
+            label_perplexity = log_probs.gather(
+                dim=0,
+                index=tokens,
+            )
+            PERPLEXITY = label_perplexity.item()
+
+            if len(ranking_position) >0 and ranking_position[0].shape[0] != 0:
+                rank = ranking_position[0][0] + 1
+
+                # print("rank: {}".format(rank))
+
+                if rank >= 0:
+                    MRR = (1/rank)
+                if rank >= 0 and rank <= P_AT:
+                    P_AT_X = 1.
+                if rank == 1:
+                    P_AT_1 = 1.
+
+        experiment_result["MRR"] = MRR
+        experiment_result["P_AT_X"] = P_AT_X
+        experiment_result["P_AT_1"] = P_AT_1
+        experiment_result["PERPLEXITY"] = PERPLEXITY
+        #
+        # print("MRR: {}".format(experiment_result["MRR"]))
+        # print("P_AT_X: {}".format(experiment_result["P_AT_X"]))
+        # print("P_AT_1: {}".format(experiment_result["P_AT_1"]))
+        # print("PERPLEXITY: {}".format(experiment_result["PERPLEXITY"]))
+
+        return experiment_result
+
+    @staticmethod
+    def __max_probs_values_indices(masked_indices, log_probs, topk=1000):
+
+        # score only first mask
+        masked_indices = masked_indices[:1]
+
+        masked_index = masked_indices[0]
+        log_probs = log_probs[masked_index]
+
+        value_max_probs, index_max_probs = torch.topk(input=log_probs,k=topk,dim=0)
+        index_max_probs = index_max_probs.numpy().astype(int)
+        value_max_probs = value_max_probs.detach().numpy()
+
+        return log_probs, index_max_probs, value_max_probs
+
+    @staticmethod
+    def __print_top_k(value_max_probs, index_max_probs, vocab, mask_topk, index_list, max_printouts = 10):
+        result = []
+        for i in range(mask_topk):
+            filtered_idx = index_max_probs[i].item()
+
+            if index_list is not None:
+                # the softmax layer has been filtered using the vocab_subset
+                # the original idx should be retrieved
+                idx = index_list[filtered_idx]
+            else:
+                idx = filtered_idx
+
+            log_prob = value_max_probs[i].item()
+            word_form = vocab[idx]
+            
+            element = {'i' : i, 'token_idx': idx, 'log_prob': log_prob, 'token_word_form': word_form}
+            result.append(element)
+        return result
+
+class LAMATester(pl.Trainer):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def test(
+        self,
+        model = None,
+        dataloaders = None,
+        ckpt_path = None,
+        verbose = True,
+        datamodule = None,
+    ):
+        r"""
+        Perform one evaluation epoch over the test set.
+        It's separated from fit to make sure you never run on your test set until you want to.
+
+        Args:
+            model: The model to test.
+
+            dataloaders: A :class:`torch.utils.data.DataLoader` or a sequence of them,
+                or a :class:`~pytorch_lightning.core.datamodule.LightningDataModule` specifying test samples.
+
+            ckpt_path: Either ``best`` or path to the checkpoint you wish to test.
+                If ``None`` and the model instance was passed, use the current weights.
+                Otherwise, the best model checkpoint from the previous ``trainer.fit`` call will be loaded
+                if a checkpoint callback is configured.
+
+            verbose: If True, prints the test results.
+
+            datamodule: An instance of :class:`~pytorch_lightning.core.datamodule.LightningDataModule`.
+
+        Returns:
+            List of dictionaries with metrics logged during the test phase, e.g., in model- or callback hooks
+            like :meth:`~pytorch_lightning.core.lightning.LightningModule.test_step`,
+            :meth:`~pytorch_lightning.core.lightning.LightningModule.test_epoch_end`, etc.
+            The length of the list corresponds to the number of test dataloaders used.
+        """
+        self.strategy.model = model or self.lightning_module
+        return self._call_and_handle_interrupt(self._test_impl, model, dataloaders, ckpt_path, verbose, datamodule)

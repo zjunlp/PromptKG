@@ -8,6 +8,7 @@ from collections import defaultdict
 from enum import Enum
 import time
 import random
+from sqlalchemy import true
 import torch
 from sklearn.cluster import KMeans
 
@@ -17,7 +18,7 @@ import numpy as np
 
 from models.utils import construct_mask
 
-from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset
+from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset, LAMADataset, LAMASampler
 from .base_data_module import BaseKGCDataModule, QADataModule
 
 def lmap(f, x):
@@ -25,8 +26,8 @@ def lmap(f, x):
 
 
 class KGT5DataModule(BaseKGCDataModule):
-    def __init__(self, args) -> None:
-        super().__init__(args)
+    def __init__(self, args, lama: bool=False) -> None:
+        super().__init__(args, lama)
         if "T5" in args.model_name_or_path:
             self.tokenizer = T5Tokenizer.from_pretrained(self.args.model_name_or_path)
         else:
@@ -444,3 +445,67 @@ class KNNKGEPretrainDataModule(KNNKGEDataModule):
         )
         features.update(dict(label=torch.tensor(label)))
         return features
+
+class LAMADataModule(BaseKGCDataModule):
+    def __init__(self, args, tokenizer=None, lama=True) -> None:
+        super().__init__(args, lama)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False) \
+                        if tokenizer == None else tokenizer
+    
+    @staticmethod
+    def add_to_argparse(parser):
+        BaseKGCDataModule.add_to_argparse(parser)
+        parser.add_argument("--model_name_or_path", type=str, default="roberta-base", help="the name or the path to the pretrained model")
+        parser.add_argument("--max_seq_length", type=int, default=256, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--eval_batch_size", type=int, default=8)
+        parser.add_argument("--overwrite_cache", action="store_true", default=False)
+        parser.add_argument("--max_entity_length", type=int, default=32)
+        return parser
+
+    def setup(self, stage):
+        now_time = time.time()
+        print("setup data for each process...")
+        if stage == "fit" and False:
+            self.data_train = LAMADataset(self.args)
+            self.data_val = LAMADataset(self.args)
+        else:
+            self.data_test = LAMADataset(self.args, self.tokenizer)
+            
+        
+        print(f"Filtered samples: {self.data_test.filter_count} items")
+        print("finished data processing... costing {}s...".format(time.time() - now_time))
+
+    def collate_fn(self, items):
+        inputs = [item[1] for item in items]
+        outputs = [item[2] for item in items]
+        # self.args.max_seq_length
+        inputs_tokenized = self.tokenizer(inputs, padding='longest', max_length=512, truncation=True, return_tensors="pt")
+        if inputs_tokenized.input_ids.shape[1] == 512:
+            del_list = []
+            for idx, input in enumerate(inputs_tokenized.input_ids):
+                mask_idx = (input == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+                if len(mask_idx[0]) == 0:
+                    del_list.append(idx)
+            del_list.reverse()
+            for idx in del_list:
+                del inputs[idx]
+                del outputs[idx]
+            inputs_tokenized = self.tokenizer(inputs, padding='longest', max_length=512, truncation=True, return_tensors="pt")
+            outputs_tokenized = self.tokenizer(outputs, padding='longest', truncation=True, return_tensors="pt", add_special_tokens=False)
+        else:
+            outputs_tokenized = self.tokenizer(outputs, padding='longest', truncation=True, return_tensors="pt", add_special_tokens=False)
+        input_ids, attention_mask = inputs_tokenized.input_ids, inputs_tokenized.attention_mask
+        labels, _ = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
+        
+        return dict(input_ids=input_ids, attention_mask=attention_mask, labels=labels, batch_data=items)
+
+    def train_dataloader(self):
+        raise NotImplementedError("Please use LAMA to test model...")
+
+    def val_dataloader(self):
+        raise NotImplementedError("Please use LAMA to test model...")
+    
+    def test_dataloader(self, relation: str = None):
+        self.data_test.set_relation(relation)
+        return DataLoader(self.data_test, sampler=LAMASampler(self.data_test, self.tokenizer), collate_fn=self.collate_fn, 
+                batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, pin_memory=True, drop_last=False)
