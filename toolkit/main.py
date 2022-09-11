@@ -39,11 +39,15 @@ def _setup_parser():
 
     # Basic arguments
     parser.add_argument("--wandb", action="store_true", default=False)
+    parser.add_argument("--lama_test", action="store_true", default=False)
     parser.add_argument("--lit_model_class", type=str, default="TransformerLitModel")
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--data_class", type=str, default="KGC")
     parser.add_argument("--model_class", type=str, default="RobertaUseLabelWord")
     parser.add_argument("--checkpoint", type=str, default=None)
+    parser.add_argument("--lamadataset", type=str, default=None, choices=['Google_RE', 'Squad', 'TREx', 'ConceptNet', None], 
+            help="Choose a subdataset in [Google_RE, Squad, TREx, ConceptNet] of LAMA or None (represents the full dataset)."
+        )
 
     # Get the data and model classes, so that we can add their specific arguments
     temp_args, _ = parser.parse_known_args()
@@ -102,8 +106,9 @@ def main():
 
 
 
-    
-    lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
+
+    lit_model = litmodel_class(args=args, tokenizer=tokenizer)
+    # lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
     # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
     # if args.checkpoint:
@@ -133,23 +138,26 @@ def main():
     )
     callbacks = [early_callback, model_checkpoint]
 
-
-
-
     # args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
-    # make sure use one device to test
-    args.devices = 1
-    tester = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
-    
     
     if args.checkpoint:
         lit_model.load_state_dict(torch.load(args.checkpoint, map_location="cpu")['state_dict'])
         trainer.test(lit_model, datamodule=data)
         return
 
-    trainer.fit(lit_model, datamodule=data)
-    result = tester.test(lit_model, data)
+    if not args.lama_test:
+        trainer.fit(lit_model, datamodule=data)
+        # make sure use one device to test
+        args.devices = 1
+        tester = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs", gpus=args.gpus)
+        result = tester.test(lit_model, data)
+    else:
+        lama_data = _import_class(f"data.LAMADataModule")(args)
+        LAMAWrapper = _import_class("lit_models.LAMAWrapper")
+        lit_model = LAMAWrapper(args, lit_model)
+        tester = pl.Trainer.from_argparse_args(args, default_root_dir="training/logs", gpus=args.gpus)
+        result = tester.test(lit_model, lama_data)
 
     path = model_checkpoint.best_model_path
 

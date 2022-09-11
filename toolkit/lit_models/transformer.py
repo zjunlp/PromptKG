@@ -10,6 +10,7 @@ import pickle
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import sys
 import json
 # from transformers.utils.dummy_pt_objects import PrefixConstrainedLogitsProcessor
 
@@ -17,7 +18,7 @@ from .base import BaseLitModel
 from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 
 from functools import partial
-from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good
+from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good, LAMA_metrics
 
 from models.trie import get_end_to_end_prefix_allowed_tokens_fn_hf
 
@@ -36,7 +37,8 @@ __all__ = (
     "KNNKGELitModel",
     "KNNKGEPretrainLitModel",
     "KGT5LitModel",
-    "KGBartLitModel"
+    "KGBartLitModel",
+    "LAMAWrapper"
 )
 
 def lmap(f: Callable, x: Iterable) -> List:
@@ -279,7 +281,7 @@ class KNNKGELitModel(BaseLitModel):
         # resize the word embedding layer
 
         self.decode = partial(decode, tokenizer=self.tokenizer)
-        self.model.resize_token_embeddings(len(self.tokenizer) + kwargs['num_entity'] + kwargs['num_relation'])
+        # self.model.resize_token_embeddings(len(self.tokenizer) + kwargs['num_entity'] + kwargs['num_relation'])
 
 
     def on_fit_start(self) -> None:
@@ -425,6 +427,67 @@ class KNNKGELitModel(BaseLitModel):
         parser.add_argument("--bce", type=int, default=0, help="")
         return parser
 
+class LAMAWrapper(BaseLitModel):
+    def __init__(self, args, lit_model):
+        super().__init__(args)
+        self.tokenizer = lit_model.tokenizer
+        #self.model = BERTConnector(args, lit_model.model, self.tokenizer)
+        self.model = lit_model.model
+        self.metrics = LAMA_metrics()
+
+    def _eval(self, batch, batch_idx, ):
+        input_ids = batch['input_ids']
+        # single label
+        labels = batch.pop('labels')
+        filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
+        my_keys = list(batch.keys())
+        for k in my_keys:
+            if k not in ["input_ids", "attention_mask", "token_type_ids"]:
+                batch.pop(k)
+        logits = self.model(**batch, return_dict=True).logits
+        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bsz = input_ids.shape[0]
+        logits = logits[torch.arange(bsz), mask_idx]
+        # assert logits.shape == labels.shape
+        # for i in range(logits.shape[0]):
+        #     # if len(filter_entity_ids[i]) == 0: continue
+        #     try:
+        #         logits[i][filter_entity_ids[i]] = -100
+        #     except:
+        #         import IPython; IPython.embed(); exit(1)
+        # logits += labels * -100 # mask entityj
+        # for i in range(bsz):
+        #     logits[i][labels]
+
+        _, outputs = torch.sort(logits, dim=1, descending=True)
+        _, outputs = torch.sort(outputs, dim=1)
+        ranks = outputs[torch.arange(bsz), labels[:,0]].detach().cpu() + 1   
+
+        return dict(ranks = np.array(ranks))
+
+    def test_step(self, batch, batch_idx):
+
+        result = self._eval(batch, batch_idx)
+        self.log("Test/result", np.mean(result['ranks']), prog_bar=True, logger=False)
+
+        return result
+
+    def test_epoch_end(self, outputs) -> None:
+        ranks = np.concatenate([_['ranks'] for _ in outputs])
+
+        hits20 = (ranks<=20).mean()
+        hits10 = (ranks<=10).mean()
+        hits3 = (ranks<=3).mean()
+        hits1 = (ranks<=1).mean()
+
+       
+        self.log("Test/hits10", hits10)
+        self.log("Test/hits20", hits20)
+        self.log("Test/hits3", hits3)
+        self.log("Test/hits1", hits1)
+        self.log("Test/mean_rank", ranks.mean())
+        self.log("Test/mrr", (1. / ranks).mean())
+        
 class KNNKGEPretrainLitModel(KNNKGELitModel):
     def __init__(self, args, tokenizer, **kwargs):
         super().__init__(args, tokenizer, **kwargs)

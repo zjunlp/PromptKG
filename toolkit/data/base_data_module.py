@@ -193,10 +193,6 @@ class BaseKGCDataModule(pl.LightningDataModule):
         parser.add_argument(
             "--dataset", type=str, default="FB15k-237", help="Number of additional processes to load data."
         )
-        parser.add_argument(
-            "--subdataset", type=str, default=None, choices=['Google_RE', 'Squad', 'TREx', 'ConceptNet', None], 
-            help="Choose a subdataset in [Google_RE, Squad, TREx, ConceptNet] of LAMA or None (represents the full dataset)."
-        )
         return parser
 
     def prepare_data(self):
