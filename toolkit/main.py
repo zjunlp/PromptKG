@@ -107,8 +107,8 @@ def main():
 
 
 
-    lit_model = litmodel_class(args=args, tokenizer=tokenizer)
-    # lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
+    # lit_model = litmodel_class(args=args, tokenizer=tokenizer)
+    lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
     # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
     # if args.checkpoint:
