@@ -42,6 +42,7 @@ class BaseLitModel(pl.LightningModule):
         optimizer = self.args.get("optimizer", OPTIMIZER)
         self.optimizer_class = getattr(torch.optim, optimizer)
         self.lr = self.args.get("lr", LR)
+        self.checkpoint = self.args.get("checkpoint")
 
     def _init_model(self,):
         raise NotImplementedError
@@ -127,3 +128,22 @@ class BaseLitModel(pl.LightningModule):
                 'frequency': 1,
             }
         }
+    
+    def save_checkpoint(self, path=None) -> None:
+        path = self.checkpoint if path == None else path
+        if path == None:
+            return
+        dir = os.path.dirname(path)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        torch.save(self.model.state_dict(), path)
+        print(f"Save model at {path}.")
+
+    def load_checkpoint(self, path=None) -> None:
+        path = self.checkpoint if path == None else path
+        if path == None:
+            raise RuntimeError("Load model failed: model path is invalid.")
+        self.model.load_state_dict(torch.load(path))
+        print(f"Load model from {path}.")
+        
+

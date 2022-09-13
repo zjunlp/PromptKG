@@ -18,7 +18,7 @@ from .base import BaseLitModel
 from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 
 from functools import partial
-from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good, LAMA_metrics
+from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good
 
 from models.trie import get_end_to_end_prefix_allowed_tokens_fn_hf
 
@@ -38,7 +38,7 @@ __all__ = (
     "KNNKGEPretrainLitModel",
     "KGT5LitModel",
     "KGBartLitModel",
-    "LAMAWrapper"
+    "LAMALitModel"
 )
 
 def lmap(f: Callable, x: Iterable) -> List:
@@ -427,19 +427,18 @@ class KNNKGELitModel(BaseLitModel):
         parser.add_argument("--bce", type=int, default=0, help="")
         return parser
 
-class LAMAWrapper(BaseLitModel):
-    def __init__(self, args, lit_model):
+class LAMALitModel(BaseLitModel):
+    def __init__(self, args, tokenizer):
         super().__init__(args)
-        self.tokenizer = lit_model.tokenizer
+        self.tokenizer = tokenizer
         #self.model = BERTConnector(args, lit_model.model, self.tokenizer)
-        self.model = lit_model.model
-        self.metrics = LAMA_metrics()
+        self.model = BertForMaskedLM.from_pretrained(args.model_name_or_path)
 
     def _eval(self, batch, batch_idx, ):
         input_ids = batch['input_ids']
         # single label
         labels = batch.pop('labels')
-        filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
+        # filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
         my_keys = list(batch.keys())
         for k in my_keys:
             if k not in ["input_ids", "attention_mask", "token_type_ids"]:

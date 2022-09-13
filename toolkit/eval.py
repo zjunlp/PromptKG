@@ -99,12 +99,9 @@ def main():
     data = data_class(args)
     tokenizer = data.tokenizer
 
-
-
-
-
-    # lit_model = litmodel_class(args=args, tokenizer=tokenizer)
-    lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
+    lit_model = litmodel_class(args=args, tokenizer=tokenizer)
+    lit_model.save_checkpoint()
+    # lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
     # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
     # if args.checkpoint:
@@ -122,41 +119,21 @@ def main():
         logger = pl.loggers.WandbLogger(project="kgc", name=args.dataset)
         logger.log_hyperparams(vars(args))
 
-    # metric_name = "Eval/hits10" if not args.pretrain else  "Train/loss"
-
-
-    early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
-    model_checkpoint = pl.callbacks.ModelCheckpoint(monitor=metric_name, mode="max",
-        filename='{epoch}-{acc1:.2f}',
-        dirpath=os.path.join("output", args.dataset),
-        save_weights_only=True,
-        every_n_train_steps= None
-    )
-    callbacks = [early_callback, model_checkpoint]
-
-    # args.weights_summary = "full"  # Print full summary of the model
-    trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
     
-    # if args.checkpoint:
-    #     lit_model.load_state_dict(torch.load(args.checkpoint, map_location="cpu")['state_dict'])
-    #     trainer.test(lit_model, datamodule=data)
-    #     return
-
-    trainer.fit(lit_model, datamodule=data)
-    lit_model.save_checkpoint()
-    
-    # make sure use one device to test
-    args.devices = 1
-    tester = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs", gpus=args.gpus)
+    tester = pl.Trainer.from_argparse_args(args, default_root_dir="training/logs", gpus=args.gpus)
+    lit_model.load_checkpoint()
     result = tester.test(lit_model, data)
 
-    # path = model_checkpoint.best_model_path
 
     # lit_model.load_state_dict(torch.load(path)["state_dict"])
     # print(path)
 
     # result = trainer.test(lit_model, data)
     print(result)
+
+
+
+
 
 if __name__ == "__main__":
 

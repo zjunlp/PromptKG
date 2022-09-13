@@ -218,9 +218,9 @@ class LAMADataset(Dataset):
                 tokenizer,
                 mode=None
                 ):
-        self.dataset_name = args.dataset if args is not None else 'LAMA'
+        # self.dataset_name = args.dataset if args is not None else 'LAMA'
         self.subdataset_list = ['Google_RE', 'Squad', 'TREx', 'ConceptNet']
-        self.subdataset = [args.lamadataset] if args is not None and args.lamadataset is not None \
+        self.subdataset = [args.lamadataset] if args.lamadataset is not None \
                         else self.subdataset_list
         self.data_dir = lambda path: os.path.join(f'./dataset/LAMA',path)
         
@@ -237,6 +237,7 @@ class LAMADataset(Dataset):
                     line = ujson.loads(i)
                     self.rel_label[line['relation']] = line['label']
         self.filter_count = 0
+        self.valid_label = set()
         self.all_data, self.data = self.load_data()
 
     def set_relation(self, relation):
@@ -262,13 +263,16 @@ class LAMADataset(Dataset):
         #     for token in self.tokenizer.special_tokens.values():
         #         masked_sentences.replace(token.lower(), token)
         #     labels = labels.lower()
+        if label in self.valid_label:
+            return (hrt, masked_sentence, label)
         label_tokens = self.tokenizer.tokenize(label)
         label_ids = self.tokenizer.convert_tokens_to_ids(label_tokens)
         new_label = self.tokenizer.decode(label_ids)
         if (new_label != label and new_label != label.lower()) or len(label.split()) != 1:
             self.filter_count += 1
             return (None, None, None)
-        
+
+        self.valid_label.add(label)
         return (hrt, masked_sentence, label)
 
     def load_data(self):

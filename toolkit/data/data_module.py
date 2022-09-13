@@ -460,6 +460,9 @@ class LAMADataModule(BaseKGCDataModule):
         parser.add_argument("--eval_batch_size", type=int, default=8)
         parser.add_argument("--overwrite_cache", action="store_true", default=False)
         parser.add_argument("--max_entity_length", type=int, default=32)
+        parser.add_argument("--lamadataset", type=str, default=None, choices=['Google_RE', 'Squad', 'TREx', 'ConceptNet', None], 
+            help="Choose a subdataset in [Google_RE, Squad, TREx, ConceptNet] of LAMA or None (represents the full dataset)."
+        )
         return parser
 
     def setup(self, stage):
@@ -473,6 +476,7 @@ class LAMADataModule(BaseKGCDataModule):
             
         
         print(f"Filtered samples: {self.data_test.filter_count} items")
+        print(f'All samples: {len(self.data_test)} items')
         print("finished data processing... costing {}s...".format(time.time() - now_time))
 
     def collate_fn(self, items):
