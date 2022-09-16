@@ -17,11 +17,11 @@
 
 | Models | KGC  |  QA  |  LAMA |
 | -----------: | :------: | :------: |:------: |
-| KG-BERT |  - [x]  |  - [x]  | |
-| GenKGC |  √   |      | |
-|   KGT5 |  √   |  √   | |
-| kNN-KGE |  √   |      |√ |
-| SimKGC |  √   |      | |
+| KG-BERT |  ✔  |  ✔  | |
+| GenKGC |  ✔  |      | |
+|   KGT5 |  ✔   |  ✔  | |
+| kNN-KGE |  ✔   |      |✔ |
+| SimKGC |  ✔   |      | |
 
 
 
