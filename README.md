@@ -69,6 +69,16 @@ For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command belo
 bash ./scripts/knnkge/fb15k.sh
 ```
 
+
+### Implemented Models
+| Models | KGC  |  QA  |  LAMA |
+| -----------: | :------: | :------: |:------: |
+| KG-BERT |  ✔  |  ✔  | |
+| GenKGC |  ✔  |      | |
+|   KGT5 |  ✔   |  ✔  | |
+| kNN-KGE |  ✔   |      |✔ |
+| SimKGC |  ✔   |      | |
+
 ### Framework
 
 <div align="center">
