@@ -13,25 +13,15 @@
 
 # Implemented Models
 
-<style>
-table th:first-of-type {
-    width: 4cm;
-}
-table th:nth-of-type(2) {
-    width: 150pt;
-}
-table th:nth-of-type(3) {
-    width: 8em;
-}
-</style>
 
-| Models | KGC  |  QA  |
-| -----------: | :------: | :------: |
-| <div style="width: 150pt">KG-BERT |  <div style="width: 50pt">√ | <div style="width: 50pt"> √ |
-| GenKGC |  √   |      |
-|   KGT5 |  √   |  √   |
-| kNN-KGE |  √   |      |
-| SimKGC |  √   |      |
+
+| Models | KGC  |  QA  |  LAMA |
+| -----------: | :------: | :------: |:------: |
+| KG-BERT |  √ |  √ | |
+| GenKGC |  √   |      | |
+|   KGT5 |  √   |  √   | |
+| kNN-KGE |  √   |      |√ |
+| SimKGC |  √   |      | |
 
 
 
