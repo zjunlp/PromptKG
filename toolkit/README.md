@@ -27,7 +27,7 @@ table th:nth-of-type(3) {
 
 | Models | KGC  |  QA  |
 | -----------: | :------: | :------: |
-| KG-BERT |  √ |  √ |
+| <div style="width: 150pt">KG-BERT |  <div style="width: 50pt">√ | <div style="width: 50pt"> √ |
 | GenKGC |  √   |      |
 |   KGT5 |  √   |  √   |
 | kNN-KGE |  √   |      |
