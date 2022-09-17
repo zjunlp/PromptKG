@@ -15,12 +15,13 @@
 
 
 
-| Models | KGC  |  QA  |
-| -----: | :--: | :--: |
-| GenKGC |  √   |      |
-|   KGT5 |  √   |  √   |
-| KnnKGE |  √   |      |
-| SimKGC |  √   |      |
+| Models | KGC  |  QA  |  LAMA |
+| -----------: | :------: | :------: |:------: |
+| KG-BERT |  ✔  |  ✔  | |
+| GenKGC |  ✔  |      | |
+|   KGT5 |  ✔   |  ✔  | |
+| kNN-KGE |  ✔   |      |✔ |
+| SimKGC |  ✔   |      | |
 
 
 

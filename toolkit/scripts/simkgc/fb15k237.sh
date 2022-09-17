@@ -1,5 +1,4 @@
 CUDA_VISIBLE_DEVICES=1,2 python main.py  --max_epochs=10  --num_workers=16 \
-   --accumulate_grad_batches 2 \
    --model_name_or_path  bert-base-uncased \
    --num_sanity_val_steps 0 \
    --strategy="deepspeed_stage_2" \

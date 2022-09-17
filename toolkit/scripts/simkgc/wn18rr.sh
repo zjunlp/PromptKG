@@ -1,5 +1,4 @@
 CUDA_VISIBLE_DEVICES=3 python main.py --accelerator="gpu" --gpus="0," --devices=1 --max_epochs=10  --num_workers=16 \
-   --accumulate_grad_batches 2 \
    --model_name_or_path  bert-base-uncased \
    --wandb \
    --num_sanity_val_steps 0 \

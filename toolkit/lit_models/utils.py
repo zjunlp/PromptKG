@@ -193,7 +193,9 @@ class EMA(pl.Callback):
           resource. In addition, we want to avoid duplicated operations in ranks != 0 to reduce jitter and improve
           performance.
     """
-    def __init__(self, decay: float = 0.9999, ema_device: Optional[Union[torch.device, str]] = None, pin_memory=True):
+    def __init__(self, decay = 0.9999,
+        ema_device = None,
+        pin_memory=True):
         super().__init__()
         self.decay = decay
         self.ema_device: str = f"{ema_device}" if ema_device else None  # perform ema on different device from the model

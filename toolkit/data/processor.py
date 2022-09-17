@@ -1,14 +1,17 @@
 import contextlib
+from lib2to3.pgen2 import token
 import sys
 from typing import Dict, List
 
 from collections import Counter
 from multiprocessing import Pool
+from tokenizers import Tokenizer
 from torch.utils.data import Dataset, Sampler, IterableDataset
 from collections import defaultdict
 from functools import partial
 from multiprocessing import Pool
 import os
+import ujson
 import random
 import json
 import torch
@@ -208,3 +211,165 @@ class KGT5Dataset(Dataset):
     def tokenizedToText(self, arr):
         return ''.join(self.tokenizer.convert_ids_to_tokens(arr))
 
+
+class LAMADataset(Dataset):
+    def __init__(self, 
+                args,
+                tokenizer,
+                mode=None
+                ):
+        # self.dataset_name = args.dataset if args is not None else 'LAMA'
+        self.subdataset_list = ['Google_RE', 'Squad', 'TREx', 'ConceptNet']
+        self.subdataset = [args.lamadataset] if args.lamadataset is not None \
+                        else self.subdataset_list
+        self.data_dir = lambda path: os.path.join(f'./dataset/LAMA',path)
+        
+        self.args = args
+        self.tokenizer = tokenizer
+        self.mode = mode
+        self.relation = None
+
+        self.rel_label = dict()
+        self.get_label = lambda id : self.rel_label[id].replace(' ', '_') if id.startswith('P') else id
+        if 'TREx' in self.subdataset:
+            with open(self.data_dir('relations.jsonl')) as fp:
+                for i in fp:
+                    line = ujson.loads(i)
+                    self.rel_label[line['relation']] = line['label']
+        self.filter_count = 0
+        self.valid_label = set()
+        self.all_data, self.data = self.load_data()
+
+    def set_relation(self, relation):
+        assert relation in self.data.keys() or relation == None
+        self.relation = relation
+
+    def process_sample(self, hrt, masked_sentence, label):
+        # TODO: split the sentences
+        mask_token = self.tokenizer.special_tokens_map['mask_token']
+        sep_token = self.tokenizer.special_tokens_map['sep_token']
+        masked_sentence = masked_sentence.replace('[MASK]', mask_token)
+        masked_sentence = masked_sentence.replace('[SEP]', sep_token)
+        mask_count = masked_sentence.count(mask_token)
+        # beyond the max length of BertEncoder (more than 500)
+        sentence_filter = (mask_count != 1) or (len(masked_sentence.split()) > 500)
+        if sentence_filter:
+            self.filter_count += 1
+            return (None, None, None)
+        # islowercase = 'uncased' in self.tokenizer.name_or_paths
+        # if islowercase:
+        #     hrt = tuple(map(lambda x: x if x == None else x.lower(), hrt))
+        #     masked_sentences = masked_sentences.lower
+        #     for token in self.tokenizer.special_tokens.values():
+        #         masked_sentences.replace(token.lower(), token)
+        #     labels = labels.lower()
+        if label in self.valid_label:
+            return (hrt, masked_sentence, label)
+        label_tokens = self.tokenizer.tokenize(label)
+        label_ids = self.tokenizer.convert_tokens_to_ids(label_tokens)
+        new_label = self.tokenizer.decode(label_ids)
+        if (new_label != label and new_label != label.lower()) or len(label.split()) != 1:
+            self.filter_count += 1
+            return (None, None, None)
+
+        self.valid_label.add(label)
+        return (hrt, masked_sentence, label)
+
+    def load_data(self):
+        all_data = []
+        data = dict()
+        for subdataset in self.subdataset:
+            print(f"Loading {subdataset}...")
+            for file in tqdm(os.listdir(self.data_dir(f'{subdataset}'))):
+                if not '.jsonl' in file:
+                    continue
+                with open(self.data_dir(f'{subdataset}/{file}')) as fp:
+                    key_name = subdataset + '-'+self.get_label(file.split('.')[0])
+                    data[key_name] = []
+                    for i in fp:
+                        line = ujson.loads(i)
+                        hrt, masked_sentences, labels = self.parse_line(line, subdataset)
+                        if hrt == None:
+                            continue
+                        assert len(masked_sentences) == len(labels)
+                        line_data = []
+                        for idx in range(len(masked_sentences)):
+                            hrt, masked_sentence, label = self.process_sample(hrt, masked_sentences[idx], labels[idx])
+                            if hrt == None:
+                                break
+                            line_data.append(dict(hrt=hrt, masked_sentence=masked_sentence, label=label))
+                        data[key_name].extend(line_data)
+                        all_data.extend(line_data)
+        return (all_data, data, )
+
+    def parse_line(self, data_line, dataset_type: str):
+        if dataset_type == 'Google_RE':
+            hrt = (data_line['sub_label'], data_line['pred'], data_line['obj_label'])
+            masked_sentences = [' [SEP] '.join(data_line['masked_sentences'])]
+            labels = [data_line['obj_label']]
+            num_no = 0
+            num_yes = 0
+            for x in data_line["judgments"]:
+                if x["judgment"] == "yes":
+                    num_yes += 1
+                else:
+                    num_no += 1
+            if num_no > num_yes:
+                self.filter_count += 1
+                return (None, None, None)
+        elif dataset_type == 'Squad':
+            hrt = (None, None, None)
+            masked_sentences = data_line['masked_sentences']
+            labels = [data_line['obj_label']]
+        elif dataset_type == 'TREx':
+            hrt = (data_line['sub_label'], self.rel_label[data_line['predicate_id']], data_line['obj_label'])
+            masked_sentences_dict = dict()
+            for i in data_line['evidences']:
+                # obj_surface may has more than 1 token
+                # masked_sentences_dict[i['masked_sentence']] = i['obj_surface']
+                masked_sentences_dict[i['masked_sentence']] = data_line['obj_label']
+            masked_sentences = []
+            labels = []
+            for k, v in masked_sentences_dict.items():
+                masked_sentences.append(k)
+                labels.append(v)
+        elif dataset_type == 'ConceptNet':
+            if 'sub_label' in data_line.keys():
+                hrt = (data_line['sub_label'], data_line['pred'], data_line['obj_label'])
+            else:
+                hrt = (data_line['sub'], data_line['pred'], data_line['obj'])
+            masked_sentences = data_line['masked_sentences']
+            labels = [data_line['obj_label']]
+        else:
+            raise NotImplementedError
+        return (hrt, masked_sentences, labels, )
+
+    def __len__(self):
+        if self.relation == None:
+            return len(self.all_data)
+        else:
+            return len(self.data[self.relation])
+    
+    def __getitem__(self, index):
+        if self.relation == None:
+            item = self.all_data[index]
+        else:
+            item = self.data[self.relation][index]
+        hrt = item['hrt']
+        masked_sentence = item['masked_sentence']
+        label = item['label']
+        return (hrt, masked_sentence, label, )
+
+class LAMASampler(Sampler):
+    def __init__(self, data_source, tokenizer) -> None:
+        self.data_source = data_source
+        self.tokenizer = tokenizer
+
+    def __iter__(self):
+        index_sorted = sorted(
+            range(len(self.data_source)), key=lambda k: len(self.data_source[k][1].split()), reverse=True
+        )
+        return iter(index_sorted)
+
+    def __len__(self) -> int:
+        return len(self.data_source)
