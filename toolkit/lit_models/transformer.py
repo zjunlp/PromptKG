@@ -38,7 +38,8 @@ __all__ = (
     "KNNKGEPretrainLitModel",
     "KGT5LitModel",
     "KGBartLitModel",
-    "LAMALitModel"
+    "LAMALitModel",
+    "KGT5KGCLitModel"
 )
 
 def lmap(f: Callable, x: Iterable) -> List:
@@ -782,12 +783,12 @@ class KGT5LitModel(BaseLitModel):
         return parser
     
 
+
+
 class KGBartLitModel(KGT5LitModel):
     def __init__(self, args, tokenizer=None, **kwargs) -> None:
         super().__init__(args, tokenizer)
 
-        if args.use_ce_loss:
-            self.model.loss_fn = nn.CrossEntropyLoss()
         
     def _init_model(self):
         model = BartKGC.from_pretrained(self.args.model_name_or_path)
@@ -859,3 +860,11 @@ class KGBartLitModel(KGT5LitModel):
             if not in_flag: ranks.append(10000)
 
         return dict(ranks=ranks)
+
+
+class KGT5KGCLitModel(KGBartLitModel):
+
+    def _init_model(self):
+        model = T5KGC.from_pretrained(self.args.model_name_or_path)
+        model.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=self.args.label_smoothing)
+        return model
