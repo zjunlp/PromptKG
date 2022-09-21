@@ -4,6 +4,9 @@ Code for the SIGIR 2022 short paper "[Relation Extraction as Open-book Examinati
 
 # Related Work
 
+## RetroPrompt (NeurIPS2022)
+* Our method is related to [Decoupling Knowledge from Memorization: Retrieval-augmented Prompt Learning](https://arxiv.org/abs/2205.14704) that has been accepted by NeurIPS2022. The project address is visible at [RetroPrompt](https://github.com/zjunlp/PromptKG/tree/main/research/RetroPrompt).
+
 ## KnowPrompt (WWW2022)
 * Our method is based on [KnowPrompt: Knowledge-aware Prompt-tuning with Synergistic Optimization for Relation Extraction](https://dl.acm.org/doi/abs/10.1145/3485447.3511998) that has been accepted by WWW2022. The project address is visible at [KnowPrompt](https://github.com/zjunlp/KnowPrompt).
 
