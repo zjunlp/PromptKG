@@ -93,3 +93,15 @@ bash ./scripts/knnkge/fb15k.sh
 ### Contact Information
 
 For help or issues using the models, please submit a GitHub issue.
+
+## Other KG Representation Open-Source Projects
+
+- [OpenKE](https://github.com/jinzhuoran/CogIE)
+- [LibKGE](https://github.com/uma-pi1/kge)
+- [CogKGE](https://github.com/jinzhuoran/CogKGE)
+- [PyKEEN](https://github.com/pykeen/pykeen)
+- [GraphVite](https://graphvite.io/)
+- [Pykg2vec](https://github.com/Sujit-O/pykg2vec)
+- [PyG](https://github.com/pyg-team/pytorch_geometric)
+- [CogDL](https://github.com/THUDM/cogdl)
+- [NeuralKG](https://github.com/zjukg/NeuralKG)
