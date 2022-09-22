@@ -1,11 +1,11 @@
-CUDA_VISIBLE_DEVICES=3 python main.py --accelerator="gpu" --gpus="0," --devices=1 --max_epochs=10  --num_workers=16 \
+python main.py  --max_epochs=10  --num_workers=8 \
    --model_name_or_path  bert-base-uncased \
-   --wandb \
    --num_sanity_val_steps 0 \
    --model_class SimKGCModel \
+   --strategy="deepspeed_stage_2" \
    --lit_model_class SimKGCLitModel \
    --data_class SimKGCDataModule \
-   --batch_size 64 \
+   --batch_size 96 \
    --precision 16 \
    --check_val_every_n_epoch 1 \
    --dataset WN18RR \
