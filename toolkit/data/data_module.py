@@ -32,6 +32,8 @@ class KGT5DataModule(BaseKGCDataModule):
             self.tokenizer = T5Tokenizer.from_pretrained(self.args.model_name_or_path)
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False)
+            
+        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(self.entity2text.values())).input_ids)}
 
 
     @staticmethod
