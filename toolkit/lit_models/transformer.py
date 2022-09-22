@@ -571,6 +571,24 @@ class KGT5LitModel(BaseLitModel):
         # ent id for filter
         # ent = batch.pop("filter_ent_ids")
         bsz = batch['input_ids'].shape[0]
+        
+        
+        t_labels = [_.t for _ in batch['batch_data']]
+        for d in batch['batch_data']:
+            self.trianer.data_module.filt
+            hr = d.hr
+            idx = []
+            if d.inverse:
+                for hh in self.trainer.datamodule.filter_tr_to_h.get(hr, []):
+                    if hh in t_labels: continue
+                    idx.append(hh)
+            else:
+                for hh in self.trainer.datamodule.filter_tr_to_h.get(hr, []):
+                    if hh in t_labels: continue
+                    idx.append(hh)
+
+        idx = list(set(idx))
+        bad_words_ids = [self.entity2input_ids[_] for _ in idx]
 
         topk = self.args.beam_size
         prefix_allowed_tokens_fn = None
