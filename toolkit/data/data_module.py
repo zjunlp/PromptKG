@@ -178,6 +178,78 @@ class MetaQADataModule(QADataModule):
 
 
         
+class KGBERTDataModule(BaseKGCDataModule):
+    def __init__(self, args) -> None:
+        super().__init__(args)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=True)
+    
+    def collate_fn(self, items, mode):
+        def convert_triple_to_text_positive(triple):
+            h, r = triple.hr
+            t = triple.t
+            inverse = triple.inverse
+
+            r_input = self.relation2text[r]
+            h_input = self.entity2text[h]
+            t_input = self.entity2text[t]
+
+            # ==== construct the negative samples
+            if inverse:
+                h, t = t, h
+            else:
+                pass
+                
+
+            return self.tokenizer.sep_token.join([h_input, r_input, t_input]), 1
+        # negative sampling here
+        def convert_triple_to_text_negative(triple):
+            h, r = triple.hr
+            t = triple.t
+            inverse = triple.inverse
+
+            r_input = self.relation2text[r]
+            h_input = self.entity2text[h]
+            t_input = self.entity2text[t]
+
+            # ==== construct the negative samples
+            if inverse:
+                h, t = t, h
+                while True:
+                    h = random.randint(0, self.num_entity-1)
+                    if h not in self.filter_tr_to_h[triple.hr]: break
+                h_input = self.entity2text[h]
+                # corrupt head
+            else:
+                while True:
+                    t = random.randint(0, self.num_entity-1)
+                    if t not in self.filter_hr_to_t[triple.hr]: break
+                t_input = self.entity2text[t]
+
+
+            return self.tokenizer.sep_token.join([h_input, r_input, t_input]), 0
+
+
+
+        text_pos = [convert_triple_to_text_positive(_) for _ in items]
+        text_neg = [convert_triple_to_text_negative(_) for _ in items]
+        inputs = [_[0] for _ in text_pos] + [_[0] for _ in text_neg]
+        labels = [_[1] for _ in text_pos] + [_[1] for _ in text_neg]
+
+        inputs = self.tokenizer(inputs, padding='longest', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+
+        inputs.update(labels=torch.tensor(labels, dtype=torch.long))
+        return dict(inputs)
+    
+    @staticmethod
+    def add_to_argparse(parser):
+        BaseKGCDataModule.add_to_argparse(parser)
+        parser.add_argument("--model_name_or_path", type=str, default="roberta-base", help="the name or the path to the pretrained model")
+        parser.add_argument("--max_seq_length", type=int, default=256, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--eval_batch_size", type=int, default=8)
+        parser.add_argument("--overwrite_cache", action="store_true", default=False)
+        return parser
+
+
 
 
 
