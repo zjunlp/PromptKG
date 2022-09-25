@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0 python main.py --gpus "0," --max_epochs=50  --num_workers=16 \
+ python main.py --gpus "0" --max_epochs=50  --num_workers=16 \
    --model_name_or_path  bert-base-uncased \
    --accumulate_grad_batches 1 \
    --model_class KGBERT \
