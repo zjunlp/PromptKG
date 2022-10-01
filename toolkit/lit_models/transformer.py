@@ -1,28 +1,22 @@
 from logging import debug
 import math
-import os
-import copy
-import random
 import pytorch_lightning as pl
 from tqdm import tqdm
 import torch
+import torchmetrics
 import pickle
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import sys
-import json
-# from transformers.utils.dummy_pt_objects import PrefixConstrainedLogitsProcessor
 
 from .base import BaseLitModel
 from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
-
+from transformers import AutoModelForMaskedLM
 from functools import partial
 from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good
 
 from models.trie import get_end_to_end_prefix_allowed_tokens_fn_hf
 
-from models import Trie
 from models.model import BartKGC
 from models.trie import get_trie
 from models import *
@@ -42,6 +36,7 @@ __all__ = (
     "KGT5KGCLitModel",
     "KGRECLitModel",
     "KGRECPretrainLitModel",
+    "KGBERTLitModel"
 )
 
 def lmap(f: Callable, x: Iterable) -> List:
@@ -442,6 +437,42 @@ class KNNKGEPretrainLitModel(KNNKGELitModel):
         self.tokenizer.save_pretrained(file_folder)
 
 
+class KGBERTLitModel(BaseLitModel):
+    def __init__(self, args, tokenizer=None, **kwargs):
+        super().__init__(args)
+
+        self.save_hyperparameters(ignore=['model', 'tokenizer'])
+        self.args = args
+        self.model = KGBERTModel.from_pretrained(args.model_name_or_path)
+        self.criterion = nn.CrossEntropyLoss()
+        self.accuracy = torchmetrics.Accuracy()
+    
+    def training_step(self, batch, batch_idx):
+        return self.model(**batch).loss
+
+    def validation_step(self, batch, batch_idx):
+        labels = batch.pop("labels")
+        outputs = self.model(**batch).logits
+        self.accuracy.update(outputs, labels)
+    
+    def validation_epoch_end(self, outputs) -> None:
+        self.log("acc", self.accuracy.compute())
+        self.accuracy.reset()
+    
+    def test_step(self, batch, batch_idx):
+        self.validation_step(batch, batch_idx)
+    
+    def test_epoch_end(self, outputs) -> None:
+        self.validation_epoch_end(outputs)
+    
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser = BaseLitModel.add_to_argparse(parser)
+
+        parser.add_argument("--label_smoothing", type=float, default=0.1, help="")
+        return parser
+
 
 class KGT5LitModel(BaseLitModel):
     def __init__(self, args, tokenizer=None, **kwargs):
@@ -512,6 +543,24 @@ class KGT5LitModel(BaseLitModel):
         # ent id for filter
         # ent = batch.pop("filter_ent_ids")
         bsz = batch['input_ids'].shape[0]
+        
+        
+        t_labels = [_.t for _ in batch['batch_data']]
+        for d in batch['batch_data']:
+            self.trianer.data_module.filt
+            hr = d.hr
+            idx = []
+            if d.inverse:
+                for hh in self.trainer.datamodule.filter_tr_to_h.get(hr, []):
+                    if hh in t_labels: continue
+                    idx.append(hh)
+            else:
+                for hh in self.trainer.datamodule.filter_tr_to_h.get(hr, []):
+                    if hh in t_labels: continue
+                    idx.append(hh)
+
+        idx = list(set(idx))
+        bad_words_ids = [self.entity2input_ids[_] for _ in idx]
 
         topk = self.args.beam_size
         prefix_allowed_tokens_fn = None

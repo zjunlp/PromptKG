@@ -1,4 +1,4 @@
-python main.py --gpus "2," --max_epochs=15  --num_workers=32 \
+python main.py --gpus "0" --max_epochs=15  --num_workers=32 \
    --model_name_or_path  facebook/bart-large \
    --accumulate_grad_batches 1 \
    --model_class BartKGC \

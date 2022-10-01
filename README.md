@@ -3,7 +3,7 @@
 <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
 
 
-**A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models.**
+**A Prompt Learning Framework for Knowledge Graph Representation Learning and Application**
 
 </div>
 ------
@@ -47,7 +47,9 @@ Install our preprocessed datasets and put them into the `dataset` folder.
 | Dataset | Google Drive                                                 | Baidu Cloud |
 | ------- | ------------------------------------------------------------ | ----------- |
 | WN18RR  | [google drive](https://drive.google.com/drive/folders/1k5mT3d7fldVSSyAYH5KWv3_BI3B2-BXJ?usp=sharing) |             |
+|FB15k-237| [google drive](https://drive.google.com/drive/folders/1aNkuAIQeFOfN4B04xnBOzxhMZKNMxoBH?usp=sharing) |             |
 | MetaQA  | [google drive](https://drive.google.com/drive/folders/1q4kph9nd4ADjvkPIZvAwYbqza7o7DFt9?usp=sharing) |             |
+
 
 
 
@@ -91,3 +93,15 @@ bash ./scripts/knnkge/fb15k.sh
 ### Contact Information
 
 For help or issues using the models, please submit a GitHub issue.
+
+## Other KG Representation Open-Source Projects
+
+- [OpenKE](https://github.com/jinzhuoran/CogIE)
+- [LibKGE](https://github.com/uma-pi1/kge)
+- [CogKGE](https://github.com/jinzhuoran/CogKGE)
+- [PyKEEN](https://github.com/pykeen/pykeen)
+- [GraphVite](https://graphvite.io/)
+- [Pykg2vec](https://github.com/Sujit-O/pykg2vec)
+- [PyG](https://github.com/pyg-team/pytorch_geometric)
+- [CogDL](https://github.com/THUDM/cogdl)
+- [NeuralKG](https://github.com/zjukg/NeuralKG)

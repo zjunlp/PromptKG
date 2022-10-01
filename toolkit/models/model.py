@@ -24,8 +24,8 @@ def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int, decoder_start
 
     return shifted_input_ids
 
-from transformers.models.bert.modeling_bert import BertForMaskedLM
 from transformers.models.roberta.modeling_roberta import RobertaForMaskedLM
+from transformers.models.bert.modeling_bert import BertForMaskedLM, BertForSequenceClassification
 
 
 class KNNKGEModel(BertForMaskedLM):
@@ -83,6 +83,10 @@ class Sparsemax(nn.Module):
         
         return (pos_loss - neg_loss).mean()
 
+class KGBERTModel(BertForSequenceClassification):
+    @staticmethod
+    def add_to_argparse(parser):
+        return parser
 class BartKGC(BartForConditionalGeneration):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
