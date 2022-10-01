@@ -1,5 +1,4 @@
 import contextlib
-from lib2to3.pgen2 import token
 import sys
 from typing import Dict, List
 
@@ -223,12 +222,16 @@ class LAMADataset(Dataset):
         self.subdataset = [args.lamadataset] if args.lamadataset is not None \
                         else self.subdataset_list
         self.data_dir = lambda path: os.path.join(f'./dataset/LAMA',path)
+
+        self.template = {"place_of_birth": "[X] was born in [Y] .", 
+                        "date_of_birth": "[X] (born [Y]).", 
+                        "place_of_death": "[X] died in [Y] ."}
         
         self.args = args
         self.tokenizer = tokenizer
         self.mode = mode
         self.relation = None
-
+        
         self.rel_label = dict()
         self.get_label = lambda id : self.rel_label[id].replace(' ', '_') if id.startswith('P') else id
         if 'TREx' in self.subdataset:
@@ -236,6 +239,7 @@ class LAMADataset(Dataset):
                 for i in fp:
                     line = ujson.loads(i)
                     self.rel_label[line['relation']] = line['label']
+                    self.template.update({line['relation']: line['template']})
         self.filter_count = 0
         self.valid_label = set()
         self.all_data, self.data = self.load_data()
@@ -254,7 +258,6 @@ class LAMADataset(Dataset):
         # beyond the max length of BertEncoder (more than 500)
         sentence_filter = (mask_count != 1) or (len(masked_sentence.split()) > 500)
         if sentence_filter:
-            self.filter_count += 1
             return (None, None, None)
         # islowercase = 'uncased' in self.tokenizer.name_or_paths
         # if islowercase:
@@ -263,17 +266,36 @@ class LAMADataset(Dataset):
         #     for token in self.tokenizer.special_tokens.values():
         #         masked_sentences.replace(token.lower(), token)
         #     labels = labels.lower()
-        if label in self.valid_label:
-            return (hrt, masked_sentence, label)
-        label_tokens = self.tokenizer.tokenize(label)
+        # if label in self.valid_label:
+        #     return (hrt, masked_sentence, label)
+        if 'roberta' in str(self.tokenizer.__class__):
+            prefix = ' '
+        else:
+            prefix = ''
+        label_tokens = self.tokenizer.tokenize(prefix+label)
         label_ids = self.tokenizer.convert_tokens_to_ids(label_tokens)
-        new_label = self.tokenizer.decode(label_ids)
-        if (new_label != label and new_label != label.lower()) or len(label.split()) != 1:
-            self.filter_count += 1
+        if not label_ids:
             return (None, None, None)
+        vocab = list(self.tokenizer.get_vocab())
+        recostructed_word = " ".join([vocab[x] for x in label_ids]).strip('Ġ').strip()
+        # print('recostructed_word    ',recostructed_word)
+        # exit(1)
+        if recostructed_word != label and recostructed_word != label.lower():
+            return (None, None, None)
+        # new_label = self.tokenizer.decode(label_ids)
+        # if (new_label != label and new_label != label.lower()) or len(label.split()) != 1:
+        #     return (None, None, None)
 
         self.valid_label.add(label)
         return (hrt, masked_sentence, label)
+
+    @staticmethod
+    def parse_template(template, subject_label):
+        SUBJ_SYMBOL = "[X]"
+        OBJ_SYMBOL = "[Y]"
+        template = template.replace(SUBJ_SYMBOL, subject_label)
+        template = template.replace(OBJ_SYMBOL, "[MASK]")
+        return [template]
 
     def load_data(self):
         all_data = []
@@ -284,28 +306,34 @@ class LAMADataset(Dataset):
                 if not '.jsonl' in file:
                     continue
                 with open(self.data_dir(f'{subdataset}/{file}')) as fp:
-                    key_name = subdataset + '-'+self.get_label(file.split('.')[0])
+                    _file = file.split('.')[0].rsplit('_', 1)[0]
+                    key_name = subdataset + '-'+self.get_label(_file)
+                    template = self.template[_file] if _file in self.template.keys() else None
                     data[key_name] = []
                     for i in fp:
                         line = ujson.loads(i)
-                        hrt, masked_sentences, labels = self.parse_line(line, subdataset)
+                        hrt, masked_sentences, labels, sub_id = self.parse_line(line, subdataset, template)
                         if hrt == None:
+                            self.filter_count += 1
                             continue
                         assert len(masked_sentences) == len(labels)
                         line_data = []
                         for idx in range(len(masked_sentences)):
                             hrt, masked_sentence, label = self.process_sample(hrt, masked_sentences[idx], labels[idx])
                             if hrt == None:
+                                self.filter_count += 1
                                 break
-                            line_data.append(dict(hrt=hrt, masked_sentence=masked_sentence, label=label))
+                            line_data.append(dict(hrt=hrt, masked_sentence=masked_sentence, label=label, sub_id=sub_id))
                         data[key_name].extend(line_data)
                         all_data.extend(line_data)
         return (all_data, data, )
 
-    def parse_line(self, data_line, dataset_type: str):
+    def parse_line(self, data_line, dataset_type: str, template: str):
         if dataset_type == 'Google_RE':
             hrt = (data_line['sub_label'], data_line['pred'], data_line['obj_label'])
             masked_sentences = [' [SEP] '.join(data_line['masked_sentences'])]
+            if template:
+                masked_sentences = self.parse_template(template, data_line['sub_label'])
             labels = [data_line['obj_label']]
             num_no = 0
             num_yes = 0
@@ -315,8 +343,7 @@ class LAMADataset(Dataset):
                 else:
                     num_no += 1
             if num_no > num_yes:
-                self.filter_count += 1
-                return (None, None, None)
+                return (None, None, None, None)
         elif dataset_type == 'Squad':
             hrt = (None, None, None)
             masked_sentences = data_line['masked_sentences']
@@ -333,16 +360,28 @@ class LAMADataset(Dataset):
             for k, v in masked_sentences_dict.items():
                 masked_sentences.append(k)
                 labels.append(v)
+            if template:
+                masked_sentences = self.parse_template(template, data_line['sub_label'])
+                labels = [data_line['obj_label']]
         elif dataset_type == 'ConceptNet':
             if 'sub_label' in data_line.keys():
                 hrt = (data_line['sub_label'], data_line['pred'], data_line['obj_label'])
             else:
-                hrt = (data_line['sub'], data_line['pred'], data_line['obj'])
+                return (None, None, None, None)
+                #hrt = (data_line['sub'], data_line['pred'], data_line['obj'])
             masked_sentences = data_line['masked_sentences']
             labels = [data_line['obj_label']]
         else:
             raise NotImplementedError
-        return (hrt, masked_sentences, labels, )
+        
+        assert len(masked_sentences) < 2
+        # if len(masked_sentences[0].split()) > 100:
+        #     return (None, None, None)
+        if 'sub_uri' in data_line.keys():
+            sub_id = data_line['sub_uri']
+        else:
+            sub_id = None 
+        return (hrt, masked_sentences, labels, sub_id)
 
     def __len__(self):
         if self.relation == None:
@@ -358,7 +397,8 @@ class LAMADataset(Dataset):
         hrt = item['hrt']
         masked_sentence = item['masked_sentence']
         label = item['label']
-        return (hrt, masked_sentence, label, )
+        sub_id = item['sub_id']
+        return (hrt, masked_sentence, label, sub_id)
 
 class LAMASampler(Sampler):
     def __init__(self, data_source, tokenizer) -> None:
@@ -373,3 +413,12 @@ class LAMASampler(Sampler):
 
     def __len__(self) -> int:
         return len(self.data_source)
+
+if __name__ == '__main__':
+    class ARG(object):
+        def __init__(self) -> None:
+            self.lamadataset = 'ConceptNet'
+    args = ARG()
+    tokenizer = AutoTokenizer.from_pretrained('bert-base-cased', use_fast=False)
+    dataset = LAMADataset(args, tokenizer)
+    print(len(dataset))

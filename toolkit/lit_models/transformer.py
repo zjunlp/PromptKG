@@ -39,7 +39,9 @@ __all__ = (
     "KGT5LitModel",
     "KGBartLitModel",
     "LAMALitModel",
-    "KGT5KGCLitModel"
+    "KGT5KGCLitModel",
+    "KGRECLitModel",
+    "KGRECPretrainLitModel",
 )
 
 def lmap(f: Callable, x: Iterable) -> List:
@@ -282,7 +284,7 @@ class KNNKGELitModel(BaseLitModel):
         # resize the word embedding layer
 
         self.decode = partial(decode, tokenizer=self.tokenizer)
-        # self.model.resize_token_embeddings(len(self.tokenizer) + kwargs['num_entity'] + kwargs['num_relation'])
+        
 
 
     def on_fit_start(self) -> None:
@@ -301,13 +303,11 @@ class KNNKGELitModel(BaseLitModel):
         label = batch.pop("label")
         input_ids = batch['input_ids']
         logits = self.model(**batch, return_dict=True).logits
-
         _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
         bs = input_ids.shape[0]
         mask_logits = logits[torch.arange(bs), mask_idx][:, self.entity_id_st:self.entity_id_ed]
 
         assert mask_idx.shape[0] == bs, "only one mask in sequence!"
-
         loss = self.loss_fn(mask_logits, label)
 
         # if batch_idx == 0:
@@ -428,70 +428,11 @@ class KNNKGELitModel(BaseLitModel):
         parser.add_argument("--bce", type=int, default=0, help="")
         return parser
 
-class LAMALitModel(BaseLitModel):
-    def __init__(self, args, tokenizer):
-        super().__init__(args)
-        self.tokenizer = tokenizer
-        #self.model = BERTConnector(args, lit_model.model, self.tokenizer)
-        self.model = BertForMaskedLM.from_pretrained(args.model_name_or_path)
-
-    def _eval(self, batch, batch_idx, ):
-        input_ids = batch['input_ids']
-        # single label
-        labels = batch.pop('labels')
-        # filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
-        my_keys = list(batch.keys())
-        for k in my_keys:
-            if k not in ["input_ids", "attention_mask", "token_type_ids"]:
-                batch.pop(k)
-        logits = self.model(**batch, return_dict=True).logits
-        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
-        bsz = input_ids.shape[0]
-        logits = logits[torch.arange(bsz), mask_idx]
-        # assert logits.shape == labels.shape
-        # for i in range(logits.shape[0]):
-        #     # if len(filter_entity_ids[i]) == 0: continue
-        #     try:
-        #         logits[i][filter_entity_ids[i]] = -100
-        #     except:
-        #         import IPython; IPython.embed(); exit(1)
-        # logits += labels * -100 # mask entityj
-        # for i in range(bsz):
-        #     logits[i][labels]
-
-        _, outputs = torch.sort(logits, dim=1, descending=True)
-        _, outputs = torch.sort(outputs, dim=1)
-        ranks = outputs[torch.arange(bsz), labels[:,0]].detach().cpu() + 1   
-
-        return dict(ranks = np.array(ranks))
-
-    def test_step(self, batch, batch_idx):
-
-        result = self._eval(batch, batch_idx)
-        self.log("Test/result", np.mean(result['ranks']), prog_bar=True, logger=False)
-
-        return result
-
-    def test_epoch_end(self, outputs) -> None:
-        ranks = np.concatenate([_['ranks'] for _ in outputs])
-
-        hits20 = (ranks<=20).mean()
-        hits10 = (ranks<=10).mean()
-        hits3 = (ranks<=3).mean()
-        hits1 = (ranks<=1).mean()
-
-       
-        self.log("Test/hits10", hits10)
-        self.log("Test/hits20", hits20)
-        self.log("Test/hits3", hits3)
-        self.log("Test/hits1", hits1)
-        self.log("Test/mean_rank", ranks.mean())
-        self.log("Test/mrr", (1. / ranks).mean())
-        
 class KNNKGEPretrainLitModel(KNNKGELitModel):
     def __init__(self, args, tokenizer, **kwargs):
         super().__init__(args, tokenizer, **kwargs)
         self._freaze_attention()
+        self.model.resize_token_embeddings(len(self.tokenizer) + kwargs['num_entity'] + kwargs['num_relation'])
     
     def on_test_epoch_start(self) -> None:
         file_folder = f"output/{self.args.dataset}/knnkge_pretrain_model"
@@ -868,3 +809,320 @@ class KGT5KGCLitModel(KGBartLitModel):
         model = T5KGC.from_pretrained(self.args.model_name_or_path)
         model.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=self.args.label_smoothing)
         return model
+
+class LAMALitModel(BaseLitModel):
+    def __init__(self, args, tokenizer):
+        super().__init__(args)
+        self.tokenizer = tokenizer
+        # self.model = BERTConnector(args, lit_model.model, self.tokenizer)
+        self.model = AutoModelForMaskedLM.from_pretrained(args.model_name_or_path)
+
+        if self.args.pelt:
+            self.pelt_init()
+
+    def pelt_init(self):
+        self.model = RobertaEntForMaskedLM.from_pretrained(self.args.model_name_or_path)
+        self.model.roberta.entity_embeddings.token_type_embeddings.weight.data.copy_(self.model.roberta.embeddings.token_type_embeddings.weight.data)
+        self.model.roberta.entity_embeddings.LayerNorm.weight.data.copy_(self.model.roberta.embeddings.LayerNorm.weight.data)
+        self.model.roberta.entity_embeddings.LayerNorm.bias.data.copy_(self.model.roberta.embeddings.LayerNorm.bias.data)
+
+    def _eval(self, batch, batch_idx, ):
+        input_ids = batch['input_ids']
+        masked_indices_list = batch['masked_indices_list']
+        # single label
+        labels = batch.pop('labels')
+        # filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
+        my_keys = list(batch.keys())
+        for k in my_keys:
+            if k not in ["input_ids", "attention_mask", "token_type_ids", "entity_embeddings", "entity_position_ids"]:
+                batch.pop(k)
+        logits = self.model(**batch, return_dict=True).logits[:, :, :self.tokenizer.vocab_size]
+        #_, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bsz = input_ids.shape[0]
+        logits = logits[torch.arange(bsz), masked_indices_list]
+        # assert logits.shape == labels.shape
+        # for i in range(logits.shape[0]):
+        #     # if len(filter_entity_ids[i]) == 0: continue
+        #     try:
+        #         logits[i][filter_entity_ids[i]] = -100
+        #     except:
+        #         import IPython; IPython.embed(); exit(1)
+        # logits += labels * -100 # mask entityj
+        # for i in range(bsz):
+        #     logits[i][labels]
+
+        _, outputs = torch.sort(logits, dim=1, descending=True)
+        #kkk = outputs
+        _, outputs = torch.sort(outputs, dim=1)
+        ranks = outputs[torch.arange(bsz), labels[:,0]].detach().cpu() + 1
+
+
+        # print(self.tokenizer.decode(input_ids[0]))
+        # print(kkk[0,:10])
+        # print(labels[0,0])
+        # print('top10: ', self.tokenizer.decode(kkk[0,:10]))
+        # print('lable: ', self.tokenizer.decode(labels[0,0]))
+        # for idx,i in enumerate(ranks):
+        #     if i < 10:
+        #         print('i: ', i)
+        #         print(kkk[idx,:10])
+        #         print(labels[idx,0])
+        #         print('top10: ', self.tokenizer.decode(kkk[idx,:10]))
+        #         print('lable: ', self.tokenizer.decode(labels[idx,:]))
+
+        return dict(ranks = np.array(ranks))
+
+    def test_step(self, batch, batch_idx):
+
+        result = self._eval(batch, batch_idx)
+        self.log("Test/result", np.mean(result['ranks']), prog_bar=True, logger=False)
+
+        return result
+
+    def test_epoch_end(self, outputs) -> None:
+        ranks = np.concatenate([_['ranks'] for _ in outputs])
+
+        hits20 = (ranks<=20).mean()
+        hits10 = (ranks<=10).mean()
+        hits3 = (ranks<=3).mean()
+        hits1 = (ranks<=1).mean()
+
+       
+        self.log("Test/hits10", hits10)
+        self.log("Test/hits20", hits20)
+        self.log("Test/hits3", hits3)
+        self.log("Test/hits1", hits1)
+        self.log("Test/mean_rank", ranks.mean())
+        self.log("Test/mrr", (1. / ranks).mean())
+
+class KGRECLitModel(BaseLitModel):
+    def __init__(self, args, tokenizer, **kwargs):
+        super().__init__(args)
+        self.save_hyperparameters(args)
+        if args.label_smoothing != 0.0:
+            self.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=args.label_smoothing)
+        else:
+            # self.loss_fn = nn.CrossEntropyLoss()
+            # self.last_layer = nn.Sequential(
+            #     SparseMax_good(),
+            #     LOGModel(),
+            # )
+            # t = nn.NLLLoss()
+            # self.loss_fn = lambda x,y: t(self.last_layer(x), y)
+            self.loss_fn = SparseMax(100)
+
+        self.best_acc = 0
+        self.tokenizer = tokenizer
+        self.model = KGRECModel.from_pretrained(args.model_name_or_path)
+
+        # self.__dict__.update(data_config)
+        # resize the word embedding layer
+        self.vocab_size = self.model.config.vocab_size
+        self.model.resize_token_embeddings(self.vocab_size + kwargs['num_entity'])
+        self.decode = partial(decode, tokenizer=self.tokenizer)
+        #self.pretrain = False
+
+    def on_test_start(self) -> None:
+        self.on_fit_start()
+
+    def on_fit_start(self) -> None:
+        self.entity_id_st = self.vocab_size
+        self.entity_id_ed = self.vocab_size + self.trainer.datamodule.num_item
+
+    def forward(self, x):
+        return self.model(x)
+
+    def training_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # embed();exit()
+        # print(self.optimizers().param_groups[1]['lr'])
+        label = batch.pop("label")
+        input_ids = batch['input_ids']
+        mask_pos = batch.pop("mask_pos")
+        my_keys = list(batch.keys())
+        for k in my_keys:
+            if k not in ["input_ids", "attention_mask", "token_type_ids"]:
+                batch.pop(k)
+        logits = self.model(**batch, return_dict=True).logits
+
+        # bs_idx, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bs_idx, mask_idx = mask_pos.nonzero(as_tuple=True)
+        mask_logits = logits[bs_idx, mask_idx][:, self.entity_id_st:self.entity_id_ed]
+
+        # assert mask_idx.shape[0] == bs, "only one mask in sequence!"
+    
+        loss = self.loss_fn(mask_logits, label)
+        
+
+        return loss
+
+    def _eval(self, batch, batch_idx, ):
+        input_ids = batch['input_ids']
+        # single label
+        label = batch.pop('label')
+        negs = batch.pop('negs')
+        rank_list = torch.cat((negs,label.unsqueeze(1)),1)
+        my_keys = list(batch.keys())
+        for k in my_keys:
+            if k not in ["input_ids", "attention_mask", "token_type_ids"]:
+                batch.pop(k)
+        logits = self.model(**batch, return_dict=True).logits[:, :, self.entity_id_st:self.entity_id_ed]
+
+        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bsz = input_ids.shape[0]
+        logits = logits[torch.arange(bsz), mask_idx]
+
+        logits = logits.gather(1,rank_list)
+        _, outputs = torch.sort(logits, dim=1, descending=True)
+        _, outputs = torch.sort(outputs, dim=1)
+        #print(label)
+        ranks = outputs[torch.arange(bsz), 100].detach().cpu() + 1
+
+        return dict(ranks = np.array(ranks))
+
+    def validation_step(self, batch, batch_idx):
+        result = self._eval(batch, batch_idx)
+        return result
+
+    def validation_epoch_end(self, outputs) -> None:
+        ranks = np.concatenate([_['ranks'] for _ in outputs])
+        total_ranks = ranks.shape[0]
+
+        hits20 = (ranks<=20).mean()
+        hits10 = (ranks<=10).mean()
+        hits3 = (ranks<=3).mean()
+        hits1 = (ranks<=1).mean()
+
+        self.log("Eval/hits10", hits10)
+        self.log("Eval/hits20", hits20)
+        self.log("Eval/hits3", hits3)
+        self.log("Eval/hits1", hits1)
+        self.log("Eval/mean_rank", ranks.mean())
+        self.log("Eval/mrr", (1. / ranks).mean())
+        self.log("hits10", hits10, prog_bar=True)
+        self.log("hits1", hits1, prog_bar=True)
+
+    def test_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # ranks = self._eval(batch, batch_idx)
+        result = self._eval(batch, batch_idx)
+        # self.log("Test/ranks", np.mean(ranks))
+
+        return result
+
+    def test_epoch_end(self, outputs) -> None:
+        ranks = np.concatenate([_['ranks'] for _ in outputs])
+
+        hits20 = (ranks<=20).mean()
+        hits10 = (ranks<=10).mean()
+        hits3 = (ranks<=3).mean()
+        hits1 = (ranks<=1).mean()
+
+       
+        self.log("Test/hits10", hits10)
+        self.log("Test/hits20", hits20)
+        self.log("Test/hits3", hits3)
+        self.log("Test/hits1", hits1)
+        self.log("Test/mean_rank", ranks.mean())
+        self.log("Test/mrr", (1. / ranks).mean())
+
+    
+    def _freaze_attention(self):
+        for k, v in self.model.named_parameters():
+            if "word" not in k:
+                v.requires_grad = False
+            else:
+                print(k)
+    
+    def _freaze_word_embedding(self):
+        for k, v in self.model.named_parameters():
+            if "word" in k:
+                print(k)
+                v.requires_grad = False
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser = BaseLitModel.add_to_argparse(parser)
+
+        parser.add_argument("--label_smoothing", type=float, default=0.1, help="")
+        parser.add_argument("--bce", type=int, default=0, help="")
+        return parser
+
+class KGRECPretrainLitModel(KGRECLitModel):
+    def __init__(self, args, tokenizer, **kwargs):
+        args.pretrain = True
+        super().__init__(args, tokenizer, **kwargs)
+        self._freaze_attention()
+        self.model.resize_token_embeddings(len(self.tokenizer) + kwargs['num_entity'])
+    
+    def on_test_epoch_start(self) -> None:
+        file = 'kgrec_pretrain_model'
+        file_folder = f"output/{self.args.dataset}/{file}"
+        print(f"saving the model to {file_folder}...")
+
+        self.model.save_pretrained(file_folder)
+        self.tokenizer.save_pretrained(file_folder)
+    
+    def training_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # embed();exit()
+        # print(self.optimizers().param_groups[1]['lr'])
+        label = batch.pop("label")
+        input_ids = batch['input_ids']
+        logits = self.model(**batch, return_dict=True).logits
+
+        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bs = input_ids.shape[0]
+        mask_logits = logits[torch.arange(bs), mask_idx][:, self.entity_id_st:self.entity_id_ed]
+
+        assert mask_idx.shape[0] == bs, "only one mask in sequence!"
+    
+        loss = self.loss_fn(mask_logits, label)
+
+        # if batch_idx == 0:
+        #     print('\n'.join(self.decode(batch['input_ids'][:4])))
+        
+
+        return loss
+    
+    def _eval(self, batch, batch_idx, ):
+        input_ids = batch['input_ids']
+        # single label
+        label = batch.pop('label')
+        my_keys = list(batch.keys())
+        for k in my_keys:
+            if k not in ["input_ids", "attention_mask", "token_type_ids"]:
+                batch.pop(k)
+        logits = self.model(**batch, return_dict=True).logits[:, :, self.entity_id_st:self.entity_id_ed]
+        _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        bsz = input_ids.shape[0]
+        logits = logits[torch.arange(bsz), mask_idx]
+        # get the entity ranks
+        # filter the entity
+        # assert filter_entity_ids[0][label[0]], "correct ids must in filiter!"
+        # labels[torch.arange(bsz), label] = 0
+        
+        # assert logits.shape == labels.shape
+        # for i in range(logits.shape[0]):
+        #     # if len(filter_entity_ids[i]) == 0: continue
+        #     try:
+        #         logits[i][filter_entity_ids[i]] = -100
+        #     except:
+        #         import IPython; IPython.embed(); exit(1)
+        # logits += labels * -100 # mask entityj
+        # for i in range(bsz):
+        #     logits[i][labels]
+        
+        _, outputs = torch.sort(logits, dim=1, descending=True)
+        _, outputs = torch.sort(outputs, dim=1)
+        #print(label)
+        ranks = outputs[torch.arange(bsz), label].detach().cpu() + 1
+        
+
+        return dict(ranks = np.array(ranks))
+
+    def on_test_start(self) -> None:
+        self.on_fit_start()
+
+    def on_fit_start(self) -> None:
+        self.entity_id_st = self.tokenizer.vocab_size
+        self.entity_id_ed = self.tokenizer.vocab_size + self.trainer.datamodule.num_item
+        # self.realtion_id_st = self.tokenizer.vocab_size + self.trainer.datamodule.num_entity
+        # self.realtion_id_ed = self.tokenizer.vocab_size + self.trainer.datamodule.num_entity + self.trainer.datamodule.num_relation
