@@ -8,7 +8,6 @@ from collections import defaultdict
 from enum import Enum
 import time
 import random
-from sqlalchemy import true
 import torch
 from sklearn.cluster import KMeans
 
@@ -33,7 +32,7 @@ class KGT5DataModule(BaseKGCDataModule):
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False)
             
-        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(self.entity2text.values())).input_ids)}
+        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(self.entity2text.values()), add_special_tokens=False, add_prefix_space=True).input_ids)}
 
 
     @staticmethod
@@ -112,7 +111,8 @@ class KGT5DataModule(BaseKGCDataModule):
                 r_input = " [inverse] " + r_input
 
             h_input = self.entity2text[h]
-            t_input = self.entity2text[t]
+            # ! warning, hard coded
+            t_input = self.entity2text[t].split(",")[0]
 
             return h_input + r_input, t_input
         
