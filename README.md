@@ -84,7 +84,7 @@ bash ./scripts/knnkge/fb15k.sh
 ### Framework
 
 <div align="center">
-    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework.jpg" width="550px">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.jpg" width="550px">
 </div>
 
 
