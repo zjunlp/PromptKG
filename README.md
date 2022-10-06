@@ -87,7 +87,11 @@ bash ./scripts/knnkge/fb15k.sh
     <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="550px">
 </div>
 
+### For downstream tasks
 
+<div align="center">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/inspire-1.png" width="550px">
+</div>
 
 
 ### Contact Information
