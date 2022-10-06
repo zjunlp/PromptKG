@@ -31,7 +31,7 @@
 
 **\*\*\*\*\* ```Aprial, 2022```: [Demo-Tuning](https://github.com/zjunlp/PromptKG/tree/main/research/Demo-Tuning) | [RetrievalRE](https://github.com/zjunlp/PromptKG/tree/main/research/RetrievalRE) release \*\*\*\*\***
 
-- [x] [**Demo-Tuning**](https://github.com/zjunlp/PromptKG/tree/main/research/Demo-Tuning) (Aprial 6, 2022):  A pluggable, extensible, and efficient approach named contrastive demonstration tuning, which is free of demonstration sampling. "[Contrastive Demonstration Tuning for Pre-trained Language Models](https://arxiv.org/pdf/2204.04392.pdf)"
+- [x] [**Demo-Tuning**](https://github.com/zjunlp/PromptKG/tree/main/research/Demo-Tuning) (Aprial 6, 2022):  A pluggable, extensible, and efficient approach named contrastive demonstration tuning, which is free of demonstration sampling. "[Contrastive Demonstration Tuning for Pre-trained Language Models](https://arxiv.org/pdf/2204.04392.pdf)```EMNLP 2022 (Findings)```"
 - [x] [**RetrievalRE**](https://github.com/zjunlp/PromptKG/tree/main/research/RetrievalRE) (Aprial 6, 2022): RetrievalRE regards relation extraction as an open-book examination and leverages a new semiparametric paradigm of retrieval-enhanced prompt tuning. "[Relation Extraction as Open-book Examination: Retrieval-enhanced Prompt Tuning](https://arxiv.org/pdf/2205.02355.pdf)```SIGIR 2022``` "
 
 **\*\*\*\*\* ```January, 2022```: [GenKGC](https://github.com/zjunlp/PromptKG/tree/main/research/GenKGC) | [PromptKGC](https://github.com/zjunlp/PromptKG/tree/main/research/KnowCo-Tuning) release \*\*\*\*\***
