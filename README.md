@@ -48,6 +48,7 @@ Install our preprocessed datasets and put them into the `dataset` folder.
 | WN18RR  | [google drive](https://drive.google.com/drive/folders/1k5mT3d7fldVSSyAYH5KWv3_BI3B2-BXJ?usp=sharing) |             |
 |FB15k-237| [google drive](https://drive.google.com/drive/folders/1aNkuAIQeFOfN4B04xnBOzxhMZKNMxoBH?usp=sharing) |             |
 | MetaQA  | [google drive](https://drive.google.com/drive/folders/1q4kph9nd4ADjvkPIZvAwYbqza7o7DFt9?usp=sharing) |             |
+| KG20C   | [google drive](https://drive.google.com/drive/folders/1AJCRYiNJUFc7inwvrvarwK2hbZEyDALE?usp=sharing) |             |
 
 
 
@@ -85,6 +86,13 @@ bash ./scripts/knnkge/fb15k.sh
 <div align="center">
     <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="550px">
 </div>
+
+### Process on your own data
+
+For each knowledge graph, we have 5 files.
+* `train.tsv`, `dev.tsv`, `test.tsv`, list as (h, r, t) for entity id and relation id (start from 0).
+* `entity2text.txt`, as (entity_id, entity description).
+* `relation2text.txt` , as (relation_id, relation description).
 
 ### For downstream tasks
 
