@@ -6,7 +6,6 @@
 **A Prompt Learning Framework for Knowledge Graph Representation Learning and Application**
 
 </div>
-------
 
 **A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models  across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
 
@@ -90,7 +89,7 @@ bash ./scripts/knnkge/fb15k.sh
 ### For downstream tasks
 
 <div align="center">
-    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/inspire-1.png" width="550px">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/inspire-1.png" width="350px">
 </div>
 
 
