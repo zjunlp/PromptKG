@@ -43,6 +43,7 @@ def _setup_parser():
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--data_class", type=str, default="KGC")
     parser.add_argument("--model_class", type=str, default="RobertaUseLabelWord")
+    parser.add_argument("--early_stop", type=int, default=1)
     parser.add_argument("--checkpoint", type=str, default=None)
 
     # Get the data and model classes, so that we can add their specific arguments
@@ -124,15 +125,18 @@ def main():
 
     # metric_name = "Eval/hits10" if not args.pretrain else  "Train/loss"
 
-
-    early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
+    if args.early_stop:
+        early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
     model_checkpoint = pl.callbacks.ModelCheckpoint(monitor=metric_name, mode="max",
         filename='{epoch}-{acc1:.2f}',
         dirpath=os.path.join("output", args.dataset),
         save_weights_only=True,
         every_n_train_steps= None
     )
-    callbacks = [early_callback, model_checkpoint]
+    if args.early_stop:
+        callbacks = [early_callback, model_checkpoint]
+    else:
+        callbacks = [model_checkpoint]
 
     # args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
@@ -143,7 +147,7 @@ def main():
     #     return
 
     trainer.fit(lit_model, datamodule=data)
-    lit_model.save_checkpoint()
+    # lit_model.load_checkpoint('output/knnkgc_wn18rr.ckpt')
     
     # make sure use one device to test
     args.devices = 1

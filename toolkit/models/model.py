@@ -24,6 +24,7 @@ def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int, decoder_start
 
     return shifted_input_ids
 
+from transformers.models.roberta.modeling_roberta import RobertaForMaskedLM
 from transformers.models.bert.modeling_bert import BertForMaskedLM, BertForSequenceClassification
 
 
@@ -176,3 +177,13 @@ class BartKGC(BartForConditionalGeneration):
             encoder_hidden_states=outputs.encoder_hidden_states,
             encoder_attentions=outputs.encoder_attentions,
         )
+
+class KGRECModel(BertForMaskedLM):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loss_fn = nn.CrossEntropyLoss()
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser.add_argument("--pretrain", type=int, default=0, help="")
+        return parser

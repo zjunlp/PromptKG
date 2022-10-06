@@ -18,7 +18,9 @@ import numpy as np
 from models.utils import construct_mask
 
 from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset, LAMADataset, LAMASampler
-from .base_data_module import BaseKGCDataModule, QADataModule
+from .base_data_module import BaseKGCDataModule, QADataModule, BaseKGRECDataModule
+from .rec_processor import KGRECDataset, PretrainKGRECDataset
+from .utils import Roberta_utils
 
 def lmap(f, x):
     return list(map(f, x))
@@ -27,12 +29,15 @@ def lmap(f, x):
 class KGT5DataModule(BaseKGCDataModule):
     def __init__(self, args, lama: bool=False) -> None:
         super().__init__(args, lama)
-        if "T5" in args.model_name_or_path:
+        if "t5" in args.model_name_or_path.lower():
             self.tokenizer = T5Tokenizer.from_pretrained(self.args.model_name_or_path)
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False)
             
-        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(self.entity2text.values()), add_special_tokens=False, add_prefix_space=True).input_ids)}
+        # use entity plain name as labels, "Plato, a xxx" => "Plato"
+        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(map(self.entity2text.values(), lambda x: x.split(",")[0])), add_special_tokens=True).input_ids)}
+        self.entity2input_ids = {i: [self.tokenizer.pad_token_id] + k for i, k in self.entity2input_ids.items()}
+
 
 
     @staticmethod
@@ -378,7 +383,7 @@ class KNNKGEDataModule(BaseKGCDataModule):
             t = item.t
             if not inverse:
                 input_ = self.tokenizer(self.tokenizer.sep_token.join([self.tokenizer.pad_token, self.entity2text[h]]), 
-                        self.tokenizer.sep_token.join([f"[relation{r}", self.relation2text[r], self.tokenizer.mask_token]),
+                        self.tokenizer.sep_token.join([self.tokenizer.pad_token, self.relation2text[r], self.tokenizer.mask_token]),
                     padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
                         )
                 cnt = 0
@@ -523,8 +528,11 @@ class KNNKGEPretrainDataModule(KNNKGEDataModule):
 class LAMADataModule(BaseKGCDataModule):
     def __init__(self, args, tokenizer=None, lama=True) -> None:
         super().__init__(args, lama)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False) \
+        self.tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=False) \
                         if tokenizer == None else tokenizer
+        if args.pelt:
+            self.pelt = Roberta_utils(self.tokenizer)
+            assert args.lamadataset in ['Google_RE', 'TREx'], 'Not support for datasets except Google_RE and TREx'
     
     @staticmethod
     def add_to_argparse(parser):
@@ -537,6 +545,7 @@ class LAMADataModule(BaseKGCDataModule):
         parser.add_argument("--lamadataset", type=str, default=None, choices=['Google_RE', 'Squad', 'TREx', 'ConceptNet', None], 
             help="Choose a subdataset in [Google_RE, Squad, TREx, ConceptNet] of LAMA or None (represents the full dataset)."
         )
+        parser.add_argument("--pelt", type=int, default=0)
         return parser
 
     def setup(self, stage):
@@ -555,7 +564,11 @@ class LAMADataModule(BaseKGCDataModule):
 
     def collate_fn(self, items):
         inputs = [item[1] for item in items]
-        outputs = [item[2] for item in items]
+        if 'roberta' in str(self.tokenizer.__class__):
+            prefix = ' '
+        else:
+            prefix = ''
+        outputs = [prefix+item[2] for item in items]
         # self.args.max_seq_length
         inputs_tokenized = self.tokenizer(inputs, padding='longest', max_length=512, truncation=True, return_tensors="pt")
         if inputs_tokenized.input_ids.shape[1] == 512:
@@ -574,8 +587,31 @@ class LAMADataModule(BaseKGCDataModule):
             outputs_tokenized = self.tokenizer(outputs, padding='longest', truncation=True, return_tensors="pt", add_special_tokens=False)
         input_ids, attention_mask = inputs_tokenized.input_ids, inputs_tokenized.attention_mask
         labels, _ = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
+        # print(self.tokenizer.decode(input_ids[0]))
+        # print(self.tokenizer.decode(labels[0]))
+        # exit(1)
         
         return dict(input_ids=input_ids, attention_mask=attention_mask, labels=labels, batch_data=items)
+
+    def collate_fn_for_pelt(self, items):
+        if 'roberta' in str(self.tokenizer.__class__):
+            prefix = ' '
+        else:
+            prefix = ''
+        sub_labels = [item[0][0] for item in items]
+        inputs = [[item[1]] for item in items]
+        outputs = [prefix+item[2] for item in items]
+        sub_ids = [item[3] for item in items]
+        input_ids_list, attention_mask_list, entity_embeddings_list, entity_position_ids_list, masked_indices_list = self.pelt.get_batch(inputs, sub_labels=sub_labels, sub_ids=sub_ids)
+        outputs_tokenized = self.tokenizer(outputs, padding='longest', truncation=True, return_tensors="pt", add_special_tokens=False)
+        labels, _ = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
+        return dict(input_ids=input_ids_list,
+                     attention_mask=attention_mask_list,
+                     masked_indices_list=masked_indices_list,
+                     entity_embeddings=entity_embeddings_list,
+                     entity_position_ids=entity_position_ids_list,
+                     labels=labels, 
+                     batch_data=items)
 
     def train_dataloader(self):
         raise NotImplementedError("Please use LAMA to test model...")
@@ -585,5 +621,307 @@ class LAMADataModule(BaseKGCDataModule):
     
     def test_dataloader(self, relation: str = None):
         self.data_test.set_relation(relation)
+        if self.args.pelt:
+            return DataLoader(self.data_test, sampler=LAMASampler(self.data_test, self.tokenizer), collate_fn=self.collate_fn_for_pelt, 
+                batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, pin_memory=True, drop_last=False)
         return DataLoader(self.data_test, sampler=LAMASampler(self.data_test, self.tokenizer), collate_fn=self.collate_fn, 
                 batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, pin_memory=True, drop_last=False)
+
+VOCAB_SIZE = 85078
+class KGRECDataModule(BaseKGRECDataModule):
+    def __init__(self, args, tokenizer=None) -> None:
+        super().__init__(args)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False) \
+                        if tokenizer == None else tokenizer
+    
+    @staticmethod
+    def add_to_argparse(parser):
+        BaseKGRECDataModule.add_to_argparse(parser)
+        parser.add_argument("--model_name_or_path", type=str, default="roberta-base", help="the name or the path to the pretrained model")
+        parser.add_argument("--max_seq_length", type=int, default=256, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--eval_batch_size", type=int, default=8)
+        parser.add_argument("--overwrite_cache", action="store_true", default=False)
+        parser.add_argument("--max_entity_length", type=int, default=32)
+
+        parser.add_argument("--use_pretrain", type=int, default=1)
+        parser.add_argument("--max_item_length", type=int, default=200)
+        parser.add_argument("--max_predictions_per_seq", type=int, default=20)
+        parser.add_argument("--masked_lm_prob", type=float, default=0.2)
+        parser.add_argument("--dupe_factor", type=int, default=10)
+        parser.add_argument("--prop_sliding_window", type=float, default=0.5)
+        parser.add_argument("--negative_item", type=int, default=100)
+        return parser
+
+    def setup(self, stage):
+        now_time = time.time()
+        print("setup data for each process...")
+        if stage == "fit":
+            self.data_train = KGRECDataset(self.args, mode='train')
+            self.data_valid = KGRECDataset(self.args, mode='valid')
+        else:
+            self.data_test = KGRECDataset(self.args, mode='test')
+        
+        print("finished data processing... costing {}s...".format(time.time() - now_time))
+
+    def collate_fn(self, items, mode):
+        input_ids = []
+        attention_mask = []
+        token_type_ids = []
+        label = []
+        mask_pos = []
+        negs = []
+        for item_idx,item in enumerate(items):
+            if mode == 'train':
+                assert len(item.input) <= self.args.max_item_length
+                label_ = []
+                num_desc = len(item.input) - len(item.mask)
+                input_list = item.input.copy()
+                for msk in item.mask:
+                    label_.append(item.input[msk])
+                    input_list[msk] = self.tokenizer.mask_token
+
+                if self.args.use_pretrain:
+                    token_list = []
+                    for it in input_list:
+                        if it == self.tokenizer.mask_token:
+                            token_list.append(it)
+                        else:
+                            token_list.extend([self.tokenizer.pad_token]*2)
+                    input_ = self.tokenizer(f'Here is the watch history of a user: {" ".join(token_list)}.',
+                        padding='longest', truncation="longest_first", max_length=self.args.max_seq_length*2,
+                            )
+                    cnt = 0
+                    cnt_mask = 0
+                    flag = -1
+                    pos = []
+                    for i in range(len(input_.input_ids)):
+                        if input_.input_ids[i] == self.tokenizer.pad_token_id and cnt < num_desc*2:
+                            if cnt & 1:
+                                assert flag != -1
+                                input_.input_ids[i] = len(self.tokenizer) + flag
+                                assert input_.input_ids[i] < VOCAB_SIZE
+                                cnt += 1
+                                flag = -1
+                            else:
+                                assert flag == -1
+                                assert input_list[(cnt >> 1) + cnt_mask] != self.tokenizer.mask_token
+                                input_.input_ids[i] = len(self.tokenizer) + self.num_item + input_list[(cnt >> 1) + cnt_mask]
+                                assert input_.input_ids[i] < VOCAB_SIZE
+                                flag = input_list[(cnt >> 1) + cnt_mask]
+                                cnt += 1
+                        elif input_.input_ids[i] == self.tokenizer.mask_token_id:
+                            pos.append(i)
+                            if random.random() > 0.9:
+                                try:
+                                    input_.input_ids[i] = len(self.tokenizer) + self.num_item + label_[cnt_mask]
+                                except:
+                                    print(len(label_),cnt_mask)
+                                    print(input_list)
+                                    print(label_)
+                                assert input_.input_ids[i] < VOCAB_SIZE
+                            elif random.random() > 0.8:
+                                input_.input_ids[i] = len(self.tokenizer) + self.num_item + random.choice(range(self.num_item))
+                                assert input_.input_ids[i] < VOCAB_SIZE
+                            cnt_mask += 1
+                    assert len(pos) == len(label_)
+                else:
+                    token_list = []
+                    for it in input_list:
+                        if it == self.tokenizer.mask_token:
+                            token_list.append(it)
+                        else:
+                            token_list.append(self.tokenizer.sep_token)
+                    input_ = self.tokenizer(f'Here is the watch history of a user: {" ".join(token_list)}.',
+                        padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+                            )
+                    cnt = 0
+                    cnt_mask = 0
+                    pos = []
+                    for i in range(len(input_.input_ids)):
+                        if input_.input_ids[i] == self.tokenizer.pad_token_id and cnt < num_desc:
+                            input_.input_ids[i] = len(self.tokenizer) + input_list[cnt]
+                        elif input_.input_ids[i] == self.tokenizer.mask_token_id:
+                            pos.append(i)
+                            if random.random() > 0.9:
+                                input_.input_ids[i] = label_[cnt_mask]
+                            elif random.random() > 0.8:
+                                input_.input_ids[i] = len(self.tokenizer) + random.choice(range(self.num_item))
+                            cnt_mask += 1
+                    assert len(pos) == len(label_)
+                mask_pos.append(pos)
+            else:
+                assert len(item.input) <= self.args.max_item_length
+                label_ = []
+                num_desc = len(item.input) - len(item.mask)
+                input_list = item.input
+                for msk in item.mask:
+                    label_.append(item.input[msk])
+                    input_list[msk] = self.tokenizer.mask_token
+                assert len(label_) == 1
+                if self.args.use_pretrain:
+                    token_list = []
+                    for it in input_list:
+                        if it == self.tokenizer.mask_token:
+                            token_list.append(it)
+                        else:
+                            token_list.extend([self.tokenizer.pad_token]*2)
+                    input_ = self.tokenizer(f'Here is the watch history of a user: {" ".join(token_list)}.',
+                        padding='longest', truncation="longest_first", max_length=self.args.max_seq_length*2,
+                            )
+                    cnt = 0
+                    flag = -1
+                    for i in range(len(input_.input_ids)):
+                        if input_.input_ids[i] == self.tokenizer.pad_token_id and cnt < num_desc*2:
+                            if cnt & 1:
+                                assert flag != -1
+                                input_.input_ids[i] = len(self.tokenizer) + flag
+                                cnt += 1
+                                flag = -1
+                            else:
+                                assert flag == -1
+                                assert input_list[cnt >> 1] != self.tokenizer.mask_token
+                                input_.input_ids[i] = len(self.tokenizer) + self.num_item + input_list[cnt >> 1]
+                                flag = input_list[cnt >> 1]
+                                cnt += 1
+                else:
+                    token_list = []
+                    for it in input_list:
+                        if it == self.tokenizer.mask_token:
+                            token_list.append(it)
+                        else:
+                            token_list.append(self.tokenizer.sep_token)
+                    input_ = self.tokenizer(f'Here is the watch history of a user: {" ".join(token_list)}.',
+                        padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+                            )
+                    cnt = 0
+                    for i in range(len(input_.input_ids)):
+                        if input_.input_ids[i] == self.tokenizer.pad_token_id and cnt < num_desc:
+                            input_.input_ids[i] = len(self.tokenizer) + input_list[cnt]
+                negs.append(item.neg)
+
+                
+            input_ids.append(input_.input_ids)
+            attention_mask.append(input_.attention_mask)
+            token_type_ids.append(input_.token_type_ids)
+            label.extend(label_)
+
+        # print('input_ids', input_ids[0])
+        # print('decode', self.tokenizer.decode(input_ids[0]))
+        # print('attention_mask', attention_mask[0])
+        # print('token_type_ids', token_type_ids[0])
+        # print('label', label[0])
+        
+        features =  dict(input_ids=input_ids, attention_mask=attention_mask, 
+                token_type_ids=token_type_ids)
+        
+        features = self.tokenizer.pad(
+            features,
+            padding='longest',
+            return_tensors="pt"
+        )
+        features.update(dict(label=torch.tensor(np.array(label))))
+        if mode == 'train':
+            # print(mask_pos)
+            mask_ = torch.zeros_like(features.input_ids)
+            for idx in range(len(mask_pos)):
+                for j in mask_pos[idx]:
+                    mask_[idx][j] = 1
+            features.update(dict(mask_pos=mask_))
+            #print('mask_pos', mask_[0])
+        else:
+            features.update(dict(negs=torch.tensor(np.array(negs))))
+            # print('negs', negs[0])
+
+        # print('input_ids', features['input_ids'].shape)
+        # print('attention_mask', features['attention_mask'].shape)
+        # print('token_type_ids', features['token_type_ids'].shape)
+        # print('label', features['label'].shape)
+        # print('mask_pos', features['mask_pos'].shape)
+        return features
+    
+        
+class KGRECPretrainDataModule(KGRECDataModule):
+    def __init__(self, args, tokenizer=None) -> None:
+        super().__init__(args)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False) \
+                        if tokenizer == None else tokenizer
+    
+    @staticmethod
+    def add_to_argparse(parser):
+        BaseKGCDataModule.add_to_argparse(parser)
+        parser.add_argument("--model_name_or_path", type=str, default="roberta-base", help="the name or the path to the pretrained model")
+        parser.add_argument("--max_seq_length", type=int, default=256, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--eval_batch_size", type=int, default=8)
+        parser.add_argument("--overwrite_cache", action="store_true", default=False)
+        parser.add_argument("--max_entity_length", type=int, default=32)
+        return parser
+
+    def setup(self, stage):
+        now_time = time.time()
+        print("setup data for each process...")
+        if stage == "fit":
+            self.data_train = PretrainKGRECDataset(self.args)
+            #self.data_val = PretrainKGRECDataset(self.args)
+        else:
+            self.data_test = PretrainKGRECDataset(self.args)
+
+        # self.filter_hr_to_t = defaultdict(list)
+
+        # with open(f"dataset/{self.args.dataset}/movies.txt") as file:
+        #     for line in file.readlines():
+        #         h, r, t = lmap(int,line.strip().split('\t'))
+        #         self.filter_hr_to_t[(h,r)].append(t)
+        
+        # self.filter_hr_to_t = {k: list(set(v)) for k, v in self.filter_hr_to_t.items()}
+        # max_filter_ent = max(max([len(_) for _ in self.filter_hr_to_t.values()]), max([len(_) for _ in self.filter_tr_to_h.values()]))
+        # print("=== max filter ent {} ===".format(max_filter_ent))
+            
+        print("finished data processing... costing {}s...".format(time.time() - now_time))
+
+    def collate_fn(self, items, mode):
+        input_ids = []
+        attention_mask = []
+        token_type_ids = []
+        label = []
+        for item_idx,item in enumerate(items):
+            e = item.e
+            words = item.text.split()
+            st = 0
+            input_ = self.tokenizer(f"The description of {self.tokenizer.mask_token} is {' '.join(words[st: min(st+200, len(words))])}",
+                padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+                    )
+            input_ids.append(input_.input_ids)
+            attention_mask.append(input_.attention_mask)
+            token_type_ids.append(input_.token_type_ids)
+            label.append(e)
+
+
+            # input_ = self.tokenizer(f"The description is {' '.join(words[st: min(st+150, len(words))])} {self.tokenizer.mask_token}.",
+            #     padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+            #         )
+            # input_ids.append(input_.input_ids)
+            # attention_mask.append(input_.attention_mask)
+            # token_type_ids.append(input_.token_type_ids)
+            
+            # label.append(e)
+        
+        # print('input_ids', input_ids[0])
+        # print('decode', self.tokenizer.decode(input_ids[0]))
+        # print('attention_mask', attention_mask[0])
+        # print('token_type_ids', token_type_ids[0])
+        # print('label', label[0])
+
+        features =  dict(input_ids=input_ids, attention_mask=attention_mask, 
+                token_type_ids=token_type_ids)
+        
+        features = self.tokenizer.pad(
+            features,
+            padding="longest",
+            max_length=self.args.max_seq_length,
+            return_tensors="pt"
+        )
+        features.update(dict(label=torch.tensor(label)))
+        return features
+
+    def val_dataloader(self):
+        pass

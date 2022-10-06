@@ -9,6 +9,7 @@ import time
 from collections import defaultdict
 from .qa_processor import KBQADataset
 from .processor import KGCDataset
+from .rec_processor import KGRECDataset
 
 class Config(dict):
     def __getattr__(self, name):
@@ -192,6 +193,73 @@ class BaseKGCDataModule(pl.LightningDataModule):
         )
         parser.add_argument(
             "--dataset", type=str, default="FB15k-237", help="Number of additional processes to load data."
+        )
+        return parser
+
+    def prepare_data(self):
+        """
+        Use this method to do things that might write to disk or that need to be done only from a single GPU in distributed settings (so don't set state `self.x = y`).
+        """
+        pass
+
+class BaseKGRECDataModule(pl.LightningDataModule):
+    """
+    Base DataModule.
+    Learn more at https://pytorch-lightning.readthedocs.io/en/stable/datamodules.html
+    """
+
+    def __init__(self, args: argparse.Namespace = None) -> None:
+        super().__init__()
+        self.args = Config(vars(args)) if args is not None else {}
+        self.batch_size = self.args.get("batch_size", BATCH_SIZE)
+        self.num_workers = self.args.get("num_workers", NUM_WORKERS)
+
+        # base setting
+        self.item2text = self.get_item_to_text()
+        self.relation2text = {}
+        self.num_item = len(self.item2text.keys())
+        self.num_entity = self.num_item
+        self.num_relation = len(self.relation2text.keys())
+    
+    def get_item_to_text(self):
+        item2text = {}
+        with open(f"./dataset/{self.args.dataset}/item2text.txt") as file:
+            for line in file.readlines():
+                id_, text = line.strip().split("\t")
+                item2text[int(id_)] = text
+        return item2text
+    
+    def setup(self, stage=None):
+        now_time = time.time()
+        print("setup data for each process...")
+        if stage == "fit":
+            self.data_train = KGRECDataset(self.args, mode="train")
+            #self.data_val = KGRECDataset(self.args, mode="dev")
+        else:
+            self.data_test = KGRECDataset(self.args, mode="test")
+
+        print("finished data processing... costing {}s...".format(time.time() - now_time))
+    
+    def train_dataloader(self):
+        return DataLoader(self.data_train, shuffle=True, batch_size=self.args.batch_size, num_workers=self.args.num_workers, 
+            collate_fn=partial(self.collate_fn, mode="train"), pin_memory=False, drop_last=True)
+
+    def val_dataloader(self):
+        return DataLoader(self.data_valid, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="valid"), pin_memory=True, drop_last=True)
+
+    def test_dataloader(self):
+        return DataLoader(self.data_test, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="test"), pin_memory=True, drop_last=False)
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser.add_argument(
+            "--batch_size", type=int, default=BATCH_SIZE, help="Number of examples to operate on per forward step."
+        )
+        parser.add_argument(
+            "--num_workers", type=int, default=0, help="Number of additional processes to load data."
+        )
+        parser.add_argument(
+            "--dataset", type=str, default="ml20m", help="Number of additional processes to load data."
         )
         return parser
 

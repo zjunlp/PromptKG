@@ -3,7 +3,7 @@
 <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
 
 
-**A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models.**
+**A Prompt Learning Framework for Knowledge Graph Representation Learning and Application**
 
 </div>
 ------

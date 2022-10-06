@@ -100,7 +100,7 @@ def main():
     tokenizer = data.tokenizer
 
     lit_model = litmodel_class(args=args, tokenizer=tokenizer)
-    lit_model.save_checkpoint()
+    # lit_model.save_checkpoint()
     # lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
     # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
@@ -121,7 +121,7 @@ def main():
 
     
     tester = pl.Trainer.from_argparse_args(args, default_root_dir="training/logs", gpus=args.gpus)
-    lit_model.load_checkpoint()
+    #lit_model.load_checkpoint()
     result = tester.test(lit_model, data)
 
 
