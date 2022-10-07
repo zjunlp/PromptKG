@@ -85,7 +85,7 @@ We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Quest
 
 
 ### Implemented Models
-| Models | KGC  |  QA  | REC |  LAMA |
+| Models | Knowledge Graph Completion (KGC)  |  Question Answering (QA)  |  Recomandation (REC) |  LAnguage Model Analysis (LAMA) |
 | -----------: | :------: | :------: | :------: |:------: |
 | KG-BERT |  ✔  |  ✔  | | |
 | GenKGC |  ✔  |      | | |
