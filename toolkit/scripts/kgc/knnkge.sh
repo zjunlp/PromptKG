@@ -1,5 +1,6 @@
 dataset="WN18RR"
-CUDA_VISIBLE_DEVICES=2 python main.py  --max_epochs=10  --num_workers=16 \
+
+CUDA_VISIBLE_DEVICES=0 python main.py  --max_epochs=10  --num_workers=16 \
    --model_name_or_path  bert-base-uncased \
    --num_sanity_val_steps 0 \
    --model_class KNNKGEModel \
@@ -18,11 +19,8 @@ CUDA_VISIBLE_DEVICES=2 python main.py  --max_epochs=10  --num_workers=16 \
 
 
 
-
-
-
-CUDA_VISIBLE_DEVICES=0,1 python main.py  --max_epochs=10  --num_workers=16 \
-   --model_name_or_path  output/FB15k-237/knnkge_pretrain_model \
+CUDA_VISIBLE_DEVICES=0 python main.py  --max_epochs=10  --num_workers=16 \
+   --model_name_or_path  output/${dataset}/knnkge_pretrain_model \
    --num_sanity_val_steps 0 \
    --strategy="deepspeed_stage_2" \
    --model_class KNNKGEModel \

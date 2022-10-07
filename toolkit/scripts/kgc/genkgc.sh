@@ -1,4 +1,6 @@
-CUDA_VISIBLE_DEVICES=1,2 python main.py  \
+dataset="WN18RR"
+
+CUDA_VISIBLE_DEVICES=0 python main.py  \
    --max_epochs=20  --num_workers=8 \
    --model_name_or_path  facebook/bart-base \
    --limit_val_batches 100 \
@@ -12,7 +14,7 @@ CUDA_VISIBLE_DEVICES=1,2 python main.py  \
    --check_val_every_n_epoch 5 \
    --wandb \
    --use_ce_loss 1 \
-   --dataset FB15k-237 \
+   --dataset ${dataset} \
    --eval_batch_size 50 \
    --beam_size 50 \
    --max_seq_length 128 \

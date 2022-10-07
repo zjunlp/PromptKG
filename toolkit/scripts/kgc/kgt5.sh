@@ -1,4 +1,6 @@
-CUDA_VISIBLE_DEVICES= python main.py  \
+dataset="WN18RR"
+
+CUDA_VISIBLE_DEVICES=0 python main.py  \
    --max_epochs=40  --num_workers=8 \
    --model_name_or_path  t5-base \
    --num_sanity_val_steps 4 \
