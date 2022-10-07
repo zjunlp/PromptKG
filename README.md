@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 Install our preprocessed datasets and put them into the `dataset` folder.
 
-| Dataset | Google Drive                                                 | Baidu Cloud |
+| Dataset (KGC) | Google Drive                                                 | Baidu Cloud |
 | ------- | ------------------------------------------------------------ | ----------- |
 | WN18RR  | [google drive](https://drive.google.com/drive/folders/1k5mT3d7fldVSSyAYH5KWv3_BI3B2-BXJ?usp=sharing) |  [baidu drive](https://pan.baidu.com/s/1bFmCWfuY1FcGjGF26UHZrg) `axo7`   |
 |FB15k-237| [google drive](https://drive.google.com/drive/folders/1aNkuAIQeFOfN4B04xnBOzxhMZKNMxoBH?usp=sharing) |   [baidu drive](https://pan.baidu.com/s/1DK0abYqfvtAPamlLULX4BQ)  `ju9t`            |
