@@ -65,16 +65,23 @@ We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Quest
     bash ./scripts/kgc/simkgc.sh
     ```
     
-* For `KGT5` with `QA` task, you can run the script files under `metaqa` as below
+* For `QA` task, you can run the script files under `metaqa`.
+** We suggest you use generative model to solve the `QA` task as below:
+    ```shell
+    bash ./scripts/metaqa/run.sh
+    ```
+* For `REC` task, you need to firstly get the KG embeddings and then train the rec system models.
+** use two-stage scripts below:
+    ```shell
+    bash ./scripts/kgrec/pretrain_item.sh
+    bash ./scripts/kgrec/ml20m.sh
+    ```
 
-```shell
-bash ./scripts/metaqa/run.sh
-```
-
-For `LAMA` dataset, you can use the files under `lama` as 
-```shell
-bash ./scripts/lama/lama_roberta.sh
-```
+*  For `LAMA` task, you can use the files under `lama`.
+**  We provide `BERT` and `RoBERTa` PLMs to evaluate their performance and with our KG embeddings (plet).
+    ```shell
+    bash ./scripts/lama/lama_roberta.sh
+    ```
 
 
 ### Implemented Models
