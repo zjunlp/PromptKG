@@ -62,13 +62,13 @@ For `link-prediction` task, we provide `FB15k-237` and `WN18RR` dataset for use.
 You can use the command below to run the `simkgc` model on `FB15k-237` dataset.
 
 ```shell
-bash ./scripts/simkgc/fb15k.sh
+bash ./scripts/kgc/simkgc.sh
 ```
 
 For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command below
 
 ```shell
-bash ./scripts/knnkge/fb15k.sh
+bash ./scripts/kgc/knnkge.sh
 ```
 
 For `KGT5` with `QA` task, you can run the script files under `metaqa` as below
