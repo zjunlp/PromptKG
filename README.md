@@ -57,21 +57,15 @@ Install our preprocessed datasets and put them into the `dataset` folder.
 
 ### Run your first experiment
 
-We first provide `link-prediction` as our example downstream task.
-For `link-prediction` task, we provide `FB15k-237` and `WN18RR` dataset for use.
-You can use the command below to run the `simkgc` model on `FB15k-237` dataset.
+We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Question Answering (QA), Recomandation (REC) and LAnguage Model Analysis (LAMA).
 
-```shell
-bash ./scripts/simkgc/fb15k.sh
-```
-
-For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command below
-
-```shell
-bash ./scripts/knnkge/fb15k.sh
-```
-
-For `KGT5` with `QA` task, you can run the script files under `metaqa` as below
+* `KGC` is our basic task to the knowledge graph embedding and evaluate the ability of the models.
+** You can run the script under `kgc` folder to train the model and get the KG embeddings (take `simkgc` as example).
+    ```shell
+    bash ./scripts/kgc/simkgc.sh
+    ```
+    
+* For `KGT5` with `QA` task, you can run the script files under `metaqa` as below
 
 ```shell
 bash ./scripts/metaqa/run.sh
