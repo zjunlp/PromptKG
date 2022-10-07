@@ -71,6 +71,17 @@ For `KNN-KGE`, you can switch to the `knn-kge` scripts, and run the command belo
 bash ./scripts/knnkge/fb15k.sh
 ```
 
+For `KGT5` with `QA` task, you can run the script files under `metaqa` as below
+
+```shell
+bash ./scripts/metaqa/run.sh
+```
+
+For `LAMA` dataset, you can use the files under `lama` as 
+```shell
+bash ./scripts/lama/lama_roberta.sh
+```
+
 
 ### Implemented Models
 | Models | KGC  |  QA  |  LAMA |
