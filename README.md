@@ -85,7 +85,7 @@ We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Quest
 
 
 ### Implemented Models
-| Models |KGC    |QA    |REC    |LAMA    |
+| Models |KGC  &emsp; &emsp;  |QA &emsp;&emsp;   |REC &emsp;&emsp;   |LAMA &emsp;&emsp;   |
 | -----------: | :------: | :------: | :------: |:------: |
 | KG-BERT |  ✔  |  ✔  | | |
 | GenKGC |  ✔  |      | | |
