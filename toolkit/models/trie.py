@@ -93,20 +93,23 @@ class Trie(object):
     def __getitem__(self, value):
         return self.get(value)
     
-    def del_sequence(self, sequence):
+    def del_entity(self, sequence):
         root = self.trie_dict
         t_root = root
         pop_ids = sequence[0]
         s_idx = 0
-        while s_idx < len(sequence) - 2:
+        while s_idx < len(sequence)-1:
             if len(root.keys()) > 1:
                 t_root = root
                 pop_ids = sequence[s_idx]
             root = root[sequence[s_idx]]
             s_idx += 1
 
-        t_root.pop(pop_ids)
-        self.len -= 1
+        try:
+            t_root.pop(pop_ids)
+            self.len -= 1
+        except:
+            print("not in the trie")
 
 import os
 from tqdm import tqdm
@@ -139,6 +142,7 @@ def get_trie(args, tokenizer):
                 entity_name = tokenizer.sep_token.join([h,r,t])
             else:
                 _, text = line.split("\t")
+                text = text.split(",")[0]
                 entity_name = text
             try:
                 entity_ids = tokenizer(entity_name, add_special_tokens=True, max_length=args.max_seq_length,truncation=True).input_ids
@@ -206,7 +210,7 @@ if __name__ == "__main__":
     total_entity_ids = []
     model_name = "facebook/bart-base"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    dataset = "FB15k-237"
+    dataset = "WN18RR"
     with open(f"../dataset/{dataset}/entity2text.txt", "r") as file:
         idx = 0
         for line in file.readlines():
@@ -218,10 +222,20 @@ if __name__ == "__main__":
     
     # add </s> and <
     trie = Trie([_[1:] for _ in total_entity_ids])
-    t = [4688, 2701, 16, 10, 621, 28223, 10, 2048, 11, 10, 5386, 50, 10360, 931, 131, 79, 50, 37, 14023, 11, 35, 822, 6, 2384, 6, 8870, 6, 50, 3188, 4, 11848, 6, 25974, 10809, 3602, 48164, 46122, 48103, 47630, 46399, 47264, 41335, 2840, 47756, 6, 5909, 839, 48298, 1264, 54, 36705, 1872, 48110, 131, 41, 2701, 6, 172, 6, 16, 65, 54, 36705, 1872, 10, 5386, 2048, 4, 2]
-    trie.del_sequence(t)
-    import IPython; IPython.embed(); exit(1)
-    # model_real_name = model_name.split("/")[-1]
-    # with open(f"{model_real_name}_{dataset}.pkl", "wb") as file:
-    #     pickle.dump(trie, file)
-    
+    s = []
+    for i, t in enumerate([_[1:] for _ in total_entity_ids]):
+        if t[:2] == [620, 8110, 6, 2705]:
+            s.append(i)
+    print(s)
+    # import IPython; IPython.embed(); exit(1)
+    # a = [[1,2,3,4,0], [1,2,3,0], [2,3,4,0],[1,2,3,4,5,0]]
+    # trie = Trie(a)
+    for t in [_[1:] for _ in total_entity_ids]:
+        try:
+            trie.del_entity(t)
+        except:
+            print("e")
+        # model_real_name = model_name.split("/")[-1]
+        # with open(f"{model_real_name}_{dataset}.pkl", "wb") as file:
+        #     pickle.dump(trie, file)
+        
