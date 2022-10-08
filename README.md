@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 Install our preprocessed datasets and put them into the `dataset` folder.
 
-| Dataset | Google Drive                                                 | Baidu Cloud |
+| Dataset (KGC) | Google Drive                                                 | Baidu Cloud |
 | ------- | ------------------------------------------------------------ | ----------- |
 | WN18RR  | [google drive](https://drive.google.com/drive/folders/1k5mT3d7fldVSSyAYH5KWv3_BI3B2-BXJ?usp=sharing) |  [baidu drive](https://pan.baidu.com/s/1bFmCWfuY1FcGjGF26UHZrg) `axo7`   |
 |FB15k-237| [google drive](https://drive.google.com/drive/folders/1aNkuAIQeFOfN4B04xnBOzxhMZKNMxoBH?usp=sharing) |   [baidu drive](https://pan.baidu.com/s/1DK0abYqfvtAPamlLULX4BQ)  `ju9t`            |
@@ -65,26 +65,33 @@ We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Quest
     bash ./scripts/kgc/simkgc.sh
     ```
     
-* For `KGT5` with `QA` task, you can run the script files under `metaqa` as below
+* For `QA` task, you can run the script files under `metaqa`.
+** We suggest you use generative model to solve the `QA` task as below:
+    ```shell
+    bash ./scripts/metaqa/run.sh
+    ```
+* For `REC` task, you need to firstly get the KG embeddings and then train the rec system models.
+** use two-stage scripts below:
+    ```shell
+    bash ./scripts/kgrec/pretrain_item.sh
+    bash ./scripts/kgrec/ml20m.sh
+    ```
 
-```shell
-bash ./scripts/metaqa/run.sh
-```
-
-For `LAMA` dataset, you can use the files under `lama` as 
-```shell
-bash ./scripts/lama/lama_roberta.sh
-```
+*  For `LAMA` task, you can use the files under `lama`.
+**  We provide `BERT` and `RoBERTa` PLMs to evaluate their performance and with our KG embeddings (plet).
+    ```shell
+    bash ./scripts/lama/lama_roberta.sh
+    ```
 
 
 ### Implemented Models
-| Models | KGC  |  QA  |  LAMA |
-| -----------: | :------: | :------: |:------: |
-| KG-BERT |  ✔  |  ✔  | |
-| GenKGC |  ✔  |      | |
-|   KGT5 |  ✔   |  ✔  | |
-| kNN-KGE |  ✔   |      |✔ |
-| SimKGC |  ✔   |      | |
+| Models | &emsp;KGC  &emsp;  | &emsp;QA &emsp;   | &emsp;REC&emsp;   | &emsp;LAMA &emsp;   |
+| -----------: | :------: | :------: | :------: |:------: |
+| KG-BERT |  ✔  |  ✔  | | |
+| GenKGC |  ✔  |      | | |
+|   KGT5 |  ✔   |  ✔  | | | 
+| kNN-KGE |  ✔   |    | ✔  |✔ |
+| SimKGC |  ✔   |      | | | 
 
 ### Framework
 
