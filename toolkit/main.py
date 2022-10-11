@@ -1,17 +1,11 @@
 import argparse
 import importlib
-from logging import debug
 
 import numpy as np
 import torch
-import fcntl
 import pytorch_lightning as pl
-import lit_models
-import yaml
-import time
-from transformers import AutoConfig
+from lit_models.utils import EMACallback
 import os
-from models import Trie
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 os.environ["OMP_NUM_THREADS"] = "1" 
@@ -74,7 +68,6 @@ def main():
     parser = _setup_parser()
     args = parser.parse_args()
 
-    # use all the available gpus
     args.gpus = torch.cuda.device_count()
 
     np.random.seed(args.seed)
@@ -83,10 +76,6 @@ def main():
 
     data_class = _import_class(f"data.{args.data_class}")
     litmodel_class = _import_class(f"lit_models.{args.lit_model_class}")
-
-    # config = AutoConfig.from_pretrained(args.model_name_or_path)
-    # # update parameters
-    # config.label_smoothing = args.label_smoothing
     
 
     # model = model_class.from_pretrained(args.model_name_or_path, config=config)
@@ -118,25 +107,26 @@ def main():
     
 
 
+
+    # ----- set up all the callbacks for training and logging ---
+
     logger = pl.loggers.TensorBoardLogger("training/logs")
     if args.wandb:
         logger = pl.loggers.WandbLogger(project="kgc", name=args.dataset)
         logger.log_hyperparams(vars(args))
 
-    # metric_name = "Eval/hits10" if not args.pretrain else  "Train/loss"
-
-    if args.early_stop:
-        early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
     model_checkpoint = pl.callbacks.ModelCheckpoint(monitor=metric_name, mode="max",
         filename='{epoch}-{acc1:.2f}',
         dirpath=os.path.join("output", args.dataset),
         save_weights_only=True,
         every_n_train_steps= None
     )
+    callbacks = [model_checkpoint]
     if args.early_stop:
-        callbacks = [early_callback, model_checkpoint]
-    else:
-        callbacks = [model_checkpoint]
+        early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
+        callbacks.append(early_callback)
+    if hasattr(args, "ema_decay") and args.ema_decay != 0.0:
+        callbacks.append(EMACallback(0.99))
 
     # args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")

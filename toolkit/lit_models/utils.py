@@ -301,3 +301,23 @@ class EMACallback(Callback):
         for s_param, param in zip(shadow_parameters, parameters):
             if param.requires_grad:
                 param.data.copy_(s_param.data)
+
+
+
+def rerank_by_graph(batch_score: torch.tensor,
+                    examples, graph,  args):
+
+    if args.task == 'wiki5m_ind':
+        assert args.neighbor_weight < 1e-6, 'Inductive setting can not use re-rank strategy'
+
+    if args.neighbor_weight < 1e-6:
+        return
+
+    for idx in range(batch_score.size(0)):
+        cur_ex = examples[idx]
+        n_hop_indices = graph.get_n_hop_entity_indices(cur_ex.head_id,
+                                                                  n_hop=args.rerank_n_hop)
+        delta = torch.tensor([args.neighbor_weight for _ in n_hop_indices]).to(batch_score.device)
+        n_hop_indices = torch.LongTensor(list(n_hop_indices)).to(batch_score.device)
+
+        batch_score[idx].index_add_(0, n_hop_indices, delta)

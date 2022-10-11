@@ -1,3 +1,4 @@
+from typing import List
 import inspect
 import unicodedata
 import urllib
@@ -5,6 +6,49 @@ import torch
 import numpy as np
 import json
 import pickle
+from collections import deque
+
+
+
+class LinkGraph:
+
+    def __init__(self, examples):
+        self.graph = {}
+        for ex in examples:
+            head_id, tail_id = ex.hr
+            if head_id not in self.graph:
+                self.graph[head_id] = set()
+            self.graph[head_id].add(tail_id)
+            if tail_id not in self.graph:
+                self.graph[tail_id] = set()
+            self.graph[tail_id].add(head_id)
+
+    def get_neighbor_ids(self, entity_id: str, max_to_keep=10) -> List[int]:
+        # make sure different calls return the same results
+        neighbor_ids = self.graph.get(entity_id, set())
+        return sorted(list(neighbor_ids))[:max_to_keep]
+
+    def get_n_hop_entity_indices(self, entity_id: int,
+                                 n_hop: int = 2,
+                                 # return empty if exceeds this number
+                                 max_nodes: int = 100000) -> set:
+        if n_hop < 0:
+            return set()
+
+        seen_eids = set()
+        seen_eids.add(entity_id)
+        queue = deque([entity_id])
+        for i in range(n_hop):
+            len_q = len(queue)
+            for _ in range(len_q):
+                tp = queue.popleft()
+                for node in self.graph.get(tp, set()):
+                    if node not in seen_eids:
+                        queue.append(node)
+                        seen_eids.add(node)
+                        if len(seen_eids) > max_nodes:
+                            return set()
+        return list(seen_eids)
 
 
 # def cache_results(_cache_fp, _refresh=False, _verbose=1):

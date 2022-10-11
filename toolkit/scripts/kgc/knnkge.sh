@@ -1,25 +1,25 @@
 dataset="WN18RR"
+model_name_or_path="SpanBERT/spanbert-base-cased"
 
-CUDA_VISIBLE_DEVICES=0 python main.py  --max_epochs=10  --num_workers=16 \
-   --model_name_or_path  bert-base-uncased \
+CUDA_VISIBLE_DEVICES= python main.py  --max_epochs=10  --num_workers=16 \
+   --model_name_or_path  ${model_name_or_path} \
    --num_sanity_val_steps 0 \
    --model_class KNNKGEModel \
    --lit_model_class KNNKGEPretrainLitModel \
    --label_smoothing 0.1 \
    --data_class KNNKGEPretrainDataModule \
-   --batch_size 32 \
+   --batch_size 16 \
    --check_val_every_n_epoch 1 \
-   --precision 16 \
    --wandb \
    --dataset ${dataset} \
-   --eval_batch_size 65 \
+   --eval_batch_size 64 \
    --max_seq_length 256 \
    --max_entity_length 256 \
-   --lr 3e-4 
+   --lr 2e-5 
 
 
 
-CUDA_VISIBLE_DEVICES=0 python main.py  --max_epochs=10  --num_workers=16 \
+CUDA_VISIBLE_DEVICES= python main.py  --max_epochs=10  --num_workers=16 \
    --model_name_or_path  output/${dataset}/knnkge_pretrain_model \
    --num_sanity_val_steps 0 \
    --strategy="deepspeed_stage_2" \
@@ -28,11 +28,11 @@ CUDA_VISIBLE_DEVICES=0 python main.py  --max_epochs=10  --num_workers=16 \
    --label_smoothing 0.1 \
    --wandb \
    --data_class KNNKGEDataModule \
-   --precision 16 \
-   --batch_size 128 \
+   --batch_size 16 \
+   --accumulate_grad_batches 4 \
    --check_val_every_n_epoch 1 \
    --dataset ${dataset} \
-   --eval_batch_size 256 \
-   --max_seq_length 128 \
+   --eval_batch_size 16 \
+   --max_seq_length 256 \
    --max_entity_length 64 \
-   --lr 5e-5 
+   --lr 2e-5 

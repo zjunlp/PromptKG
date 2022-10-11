@@ -13,7 +13,7 @@ from .base import BaseLitModel
 from transformers.optimization import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 from transformers import AutoModelForMaskedLM
 from functools import partial
-from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good
+from .utils import LabelSmoothSoftmaxCEV1, SparseMax, SparseMax_good, rerank_by_graph
 
 from models.trie import get_end_to_end_prefix_allowed_tokens_fn_hf
 
@@ -230,8 +230,10 @@ class SimKGCLitModel(BaseLitModel):
         scores = torch.mm(hr_vector, self.entity_embedding.t())
         bsz = len(batch['batch_data'])
         label = []
+        head_ids = []
         for i in range(bsz):
             d = batch['batch_data'][i]
+            head_ids.append(hr[0])
             inverse = d.inverse
             hr = tuple(d.hr)
             t = d.t
@@ -250,6 +252,7 @@ class SimKGCLitModel(BaseLitModel):
 
             scores[i][idx] = -100
             # scores[i].index_fill_(0, idx, -1)
+        rerank_by_graph(scores, head_ids)
         _, outputs = torch.sort(scores, dim=1, descending=True)
         _, outputs = torch.sort(outputs, dim=1)
         ranks = outputs[torch.arange(bsz), label].detach().cpu() + 1
@@ -282,6 +285,17 @@ class SimKGCLitModel(BaseLitModel):
             type=float,
             default=0.1,
             help="Number of examples to operate on per forward step.")
+
+        parser.add_argument(
+            "--neighbor_weight",
+            type=float,
+            default=0.0,)
+
+        parser.add_argument(
+            "--rerank_n_hop",
+            type=int,
+            default=2,)
+
 
         return parser
 
@@ -470,6 +484,7 @@ class KNNKGELitModel(BaseLitModel):
                             default=0.1,
                             help="")
         parser.add_argument("--bce", type=int, default=0, help="")
+        parser.add_argument("--ema_decay", type=float, default=0, help="")
         return parser
 
 class KNNKGEPretrainLitModel(KNNKGELitModel):
@@ -580,17 +595,21 @@ class KGT5LitModel(BaseLitModel):
                     idx.append(hh)
 
         idx = list(set(idx))
-        bad_words_ids = None
+        bad_words_ids = []
+
         if len(idx) != 0:
             bad_words_ids = [self.trainer.datamodule.entity2input_ids[_] for _ in idx]
         if self.last_bad_word_ids:
             for b in self.last_bad_word_ids:
                 self.entity_trie.add(b)
             
-            for s in sequences:
+        for s in bad_words_ids:
+            try:
                 self.entity_trie.del_entity(s)
+            except:
+                print("noisy dataset, different entity with the same descriptions.")
         
-        self.last_bad_word_ids = sequences
+        self.last_bad_word_ids = bad_words_ids
         
 
 
@@ -833,7 +852,7 @@ class KGBartLitModel(KGT5LitModel):
         return dict(ranks=ranks)
 
 
-class KGT5KGCLitModel(KGBartLitModel):
+class KGT5KGCLitModel(KGT5LitModel):
 
     def _init_model(self):
         model = T5KGC.from_pretrained(self.args.model_name_or_path)

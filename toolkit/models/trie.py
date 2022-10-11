@@ -210,7 +210,7 @@ if __name__ == "__main__":
     total_entity_ids = []
     model_name = "facebook/bart-base"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    dataset = "WN18RR"
+    dataset = "FB15k-237"
     with open(f"../dataset/{dataset}/entity2text.txt", "r") as file:
         idx = 0
         for line in file.readlines():
