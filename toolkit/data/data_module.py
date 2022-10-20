@@ -37,7 +37,9 @@ class KGT5DataModule(BaseKGCDataModule):
             
         # use entity plain name as labels, "Plato, a xxx" => "Plato"
         self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(map(lambda x: x.split(",")[0], self.entity2text.values())), add_special_tokens=True).input_ids)}
-        self.entity2input_ids = {i: [self.tokenizer.pad_token_id] + k for i, k in self.entity2input_ids.items()}
+
+        decoder_start_token_id = self.tokenizer.eos_token_id if "bart" in self.args.model_name_or_path else self.tokenizer.pad_token_id
+        self.entity2input_ids = {i: [decoder_start_token_id] + k for i, k in self.entity2input_ids.items()}
 
 
 
@@ -120,14 +122,15 @@ class KGT5DataModule(BaseKGCDataModule):
             # ! warning, hard coded
             t_input = self.entity2text[t].split(",")[0]
 
-            return h_input + r_input, t_input
+            return h_input, r_input, t_input
         
 
         text = [convert_triple_to_text(_) for _ in items]
-        inputs = [_[0] for _ in text]
-        outputs = [_[1] for _ in text]
+        inputs_h = [_[0] for _ in text]
+        inputs_r = [_[1] for _ in text]
+        outputs = [_[2] for _ in text]
 
-        inputs_tokenized = self.tokenizer(inputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+        inputs_tokenized = self.tokenizer(inputs_h, inputs_r, padding='max_length', truncation="longest_first", max_length=self.args.max_seq_length, return_tensors="pt")
         outputs_tokenized = self.tokenizer(outputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
         input_ids, attention_mask = inputs_tokenized.input_ids, inputs_tokenized.attention_mask
         labels, labels_attention_mask = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
@@ -515,7 +518,8 @@ class KNNKGEPretrainDataModule(KNNKGEDataModule):
                     )
             # add offset for entity 
             for i in range(num_neighbor):
-                input_.input_ids[i] = neighbor_ids[i] + self.st_entity
+                # [CLS] [PAD] [PAD]....
+                input_.input_ids[i+1] = neighbor_ids[i] + self.st_entity
             input_ids.append(input_.input_ids)
             attention_mask.append(input_.attention_mask)
             token_type_ids.append(input_.token_type_ids)

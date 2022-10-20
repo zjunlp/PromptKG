@@ -371,6 +371,7 @@ class KNNKGELitModel(BaseLitModel):
         self,
         batch,
         batch_idx,
+        test=False
     ):
         input_ids = batch['input_ids']
         # single label
@@ -405,8 +406,25 @@ class KNNKGELitModel(BaseLitModel):
         # logits += labels * -100 # mask entityj
         # for i in range(bsz):
         #     logits[i][labels]
-
         _, outputs = torch.sort(logits, dim=1, descending=True)
+        if test:
+            if batch_idx <= 10 and self.args.wandb:
+                columns = ["input", "label", "prediction"]
+                input_text = self.decode(batch['input_ids'])
+                data = []
+                cnt = 0
+                for src_text, rank_ids in zip(input_text, outputs):
+                    rank_ids = rank_ids[:10]
+                    predictions = []
+                    label_text = self.trainer.datamodule.entity2text[label[cnt]]
+                    for i in range(10):
+                        predictions.append(self.trainer.datamodule.entity2text[rank_ids[i]])
+
+                    if label_text in predictions:
+                        data.append([src_text, label_text, "\n".join(predictions)])
+                    cnt += 1
+                self.logger.log_text(key="samples", columns=columns, data=data)
+
         _, outputs = torch.sort(outputs, dim=1)
         ranks = outputs[torch.arange(bsz), label].detach().cpu() + 1
 
@@ -442,7 +460,7 @@ class KNNKGELitModel(BaseLitModel):
 
     def test_step(self, batch, batch_idx):  # pylint: disable=unused-argument
         # ranks = self._eval(batch, batch_idx)
-        result = self._eval(batch, batch_idx)
+        result = self._eval(batch, batch_idx, test=True)
         # self.log("Test/ranks", np.mean(ranks))
 
         return result
@@ -611,8 +629,6 @@ class KGT5LitModel(BaseLitModel):
         
         self.last_bad_word_ids = bad_words_ids
         
-
-
     def _eval_normal(
         self,
         batch,
@@ -658,7 +674,7 @@ class KGT5LitModel(BaseLitModel):
             input_text = self.decode(batch['input_ids'])
             data = []
             for src_text, output_text, label_text in zip(input_text, outputs, labels_text):
-                data.append([src_text, label_text, "\n".join(output_text)])
+                data.append([src_text, label_text, "\t\t\t  ".join(output_text)])
             self.logger.log_text(key="samples", columns=columns, data=data)
 
         return dict(ranks=ranks)
@@ -766,7 +782,7 @@ class KGBartLitModel(KGT5LitModel):
             model.loss_fn = LabelSmoothSoftmaxCEV1(
                 lb_smooth=self.args.label_smoothing)
         else:
-            model.loss_fn = SparseMax(20)
+            model.loss_fn = SparseMax(50)
         return model
 
     @staticmethod
@@ -785,12 +801,12 @@ class KGBartLitModel(KGT5LitModel):
             type=float,
             default=0.1,
             help="Number of examples to operate on per forward step.")
-        parser.add_argument("--beam_size", type=int, default=60, help="")
-        parser.add_argument("--use_ce_loss", type=int, default=0, help="")
+        parser.add_argument("--beam_size", type=int, default=10, help="")
+        parser.add_argument("--use_ce_loss", type=int, default=1, help="")
 
         return parser
 
-    def _eval_normal(
+    def _eval_normal1(
         self,
         batch,
         batch_idx,

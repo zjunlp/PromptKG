@@ -4,7 +4,7 @@ import importlib
 import numpy as np
 import torch
 import pytorch_lightning as pl
-from lit_models.utils import EMACallback
+from lit_models.utils import EMA
 import os
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
@@ -78,14 +78,13 @@ def main():
     litmodel_class = _import_class(f"lit_models.{args.lit_model_class}")
     
 
-    # model = model_class.from_pretrained(args.model_name_or_path, config=config)
     # perfered , warp the transformers encoder
     method_name = args.model_class.lower().replace("model","")
     if method_name in metric_list:
         metric_name = metric_list[method_name]
     else:
         metric_name = "hits10"
-    # model = model_class(args) if method
+
     data = data_class(args)
     tokenizer = data.tokenizer
 
@@ -93,9 +92,7 @@ def main():
 
 
 
-    # lit_model = litmodel_class(args=args, tokenizer=tokenizer)
     lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
-    # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
     # if args.checkpoint:
     #     params_dict = torch.load(args.checkpoint, map_location="cpu")['state_dict']
@@ -126,9 +123,8 @@ def main():
         early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
         callbacks.append(early_callback)
     if hasattr(args, "ema_decay") and args.ema_decay != 0.0:
-        callbacks.append(EMACallback(0.99))
+        callbacks.append(EMA(args.ema_decay, ema_device="cuda"))
 
-    # args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
     
     # if args.checkpoint:
@@ -137,10 +133,10 @@ def main():
     #     return
 
     trainer.fit(lit_model, datamodule=data)
-    # lit_model.load_checkpoint('output/knnkgc_wn18rr.ckpt')
     
     # make sure use one device to test
     args.devices = 1
+    args.accumulate_grad_batches = None
     tester = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs", gpus=args.gpus)
     result = tester.test(lit_model, data)
 

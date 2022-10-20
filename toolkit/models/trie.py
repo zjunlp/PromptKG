@@ -115,17 +115,17 @@ import os
 from tqdm import tqdm
 def get_trie(args, tokenizer):
     path = os.path.join(f"dataset/{args.dataset}", "cached_trie.pkl")
-    if not args.overwrite_cache and os.path.exists(path):
-        print("loading trie")
-        with open(path, "rb") as file:
-            trie = pickle.load(file)
-            print("first 5 sequences are ---")
-            for i, x in enumerate(trie):
-                print(x)
-                if i == 5:
-                    break
+    # if not args.overwrite_cache and os.path.exists(path):
+    #     print("loading trie")
+    #     with open(path, "rb") as file:
+    #         trie = pickle.load(file)
+    #         print("first 5 sequences are ---")
+    #         for i, x in enumerate(trie):
+    #             print(x)
+    #             if i == 5:
+    #                 break
 
-            return trie
+    #         return trie
     
     d = "entity2text.txt"
     with open(f"dataset/{args.dataset}/{d}", "r") as file:
@@ -151,8 +151,6 @@ def get_trie(args, tokenizer):
             # assert entity_ids not in total_entity_ids, print(entity_name)
             total_entity_ids.append(entity_ids)
             # show the entities
-            if idx < 5:  print(entity_name, total_entity_ids[-1])
-            idx += 1
         max_len = max(len(_) for _ in total_entity_ids)
         print("*"*10 + f"max output length : {max_len}" + "*"*10)
         print(f"total {num_error_ids} cannot be tokenized")
@@ -164,6 +162,10 @@ def get_trie(args, tokenizer):
         else:
             # t5 unbelieveable
             trie = Trie([[tokenizer.pad_token_id] + _ for _ in total_entity_ids])
+        for i, x in enumerate(trie):
+            print(x)
+            if i == 5: break
+
     
     with open(path, "wb") as file:
         pickle.dump(trie, file)
