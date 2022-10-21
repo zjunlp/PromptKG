@@ -1,6 +1,6 @@
 dataset="FB15k-237"
 
-CUDA_VISIBLE_DEVICES=1 python main.py  \
+CUDA_VISIBLE_DEVICES=0,2 python main.py  \
    --max_epochs=21  --num_workers=8 \
    --model_name_or_path  facebook/bart-base \
    --model_class BartKGC \
