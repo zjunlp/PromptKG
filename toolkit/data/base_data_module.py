@@ -10,6 +10,7 @@ from collections import defaultdict
 from .qa_processor import KBQADataset
 from .processor import KGCDataset
 from .rec_processor import KGRECDataset
+from .utils import LinkGraph
 
 class Config(dict):
     def __getattr__(self, name):
@@ -96,6 +97,8 @@ class BaseKGCDataModule(pl.LightningDataModule):
     """
     Base DataModule.
     Learn more at https://pytorch-lightning.readthedocs.io/en/stable/datamodules.html
+    TODO add 1-hop neighbors to batch for future use
+    self.graph = 
     """
 
     def __init__(self, args: argparse.Namespace = None, lama: bool=False) -> None:
@@ -103,6 +106,8 @@ class BaseKGCDataModule(pl.LightningDataModule):
         self.args = Config(vars(args)) if args is not None else {}
         self.batch_size = self.args.get("batch_size", BATCH_SIZE)
         self.num_workers = self.args.get("num_workers", NUM_WORKERS)
+
+        self.graph = None
 
 
         # base setting
@@ -142,6 +147,7 @@ class BaseKGCDataModule(pl.LightningDataModule):
             self.data_val = KGCDataset(self.args, mode="dev")
         else:
             self.data_test = KGCDataset(self.args, mode="test")
+        self.graph = LinkGraph(self.data_train)
         
         self.filter_hr_to_t = defaultdict(list)
         self.filter_tr_to_h = defaultdict(list)

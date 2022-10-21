@@ -8,7 +8,7 @@ from collections import defaultdict
 from enum import Enum
 import time
 import random
-from sqlalchemy import true
+from sklearn import neighbors
 import torch
 from sklearn.cluster import KMeans
 
@@ -21,7 +21,7 @@ from models.utils import construct_mask
 from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset, LAMADataset, LAMASampler
 from .base_data_module import BaseKGCDataModule, QADataModule, BaseKGRECDataModule
 from .rec_processor import KGRECDataset, PretrainKGRECDataset
-from .utils import Roberta_utils
+from .utils import LinkGraph, Roberta_utils
 
 def lmap(f, x):
     return list(map(f, x))
@@ -30,12 +30,17 @@ def lmap(f, x):
 class KGT5DataModule(BaseKGCDataModule):
     def __init__(self, args, lama: bool=False) -> None:
         super().__init__(args, lama)
-        if "T5" in args.model_name_or_path:
+        if "t5" in args.model_name_or_path.lower():
             self.tokenizer = T5Tokenizer.from_pretrained(self.args.model_name_or_path)
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False)
             
-        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(self.entity2text.values())).input_ids)}
+        # use entity plain name as labels, "Plato, a xxx" => "Plato"
+        self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(map(lambda x: x.split(",")[0], self.entity2text.values())), add_special_tokens=True).input_ids)}
+
+        decoder_start_token_id = self.tokenizer.eos_token_id if "bart" in self.args.model_name_or_path else self.tokenizer.pad_token_id
+        self.entity2input_ids = {i: [decoder_start_token_id] + k for i, k in self.entity2input_ids.items()}
+
 
 
     @staticmethod
@@ -114,16 +119,18 @@ class KGT5DataModule(BaseKGCDataModule):
                 r_input = " [inverse] " + r_input
 
             h_input = self.entity2text[h]
-            t_input = self.entity2text[t]
+            # ! warning, hard coded
+            t_input = self.entity2text[t].split(",")[0]
 
-            return h_input + r_input, t_input
+            return h_input, r_input, t_input
         
 
         text = [convert_triple_to_text(_) for _ in items]
-        inputs = [_[0] for _ in text]
-        outputs = [_[1] for _ in text]
+        inputs_h = [_[0] for _ in text]
+        inputs_r = [_[1] for _ in text]
+        outputs = [_[2] for _ in text]
 
-        inputs_tokenized = self.tokenizer(inputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+        inputs_tokenized = self.tokenizer(inputs_h, inputs_r, padding='max_length', truncation="longest_first", max_length=self.args.max_seq_length, return_tensors="pt")
         outputs_tokenized = self.tokenizer(outputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
         input_ids, attention_mask = inputs_tokenized.input_ids, inputs_tokenized.attention_mask
         labels, labels_attention_mask = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
@@ -458,6 +465,8 @@ class KNNKGEPretrainDataModule(KNNKGEDataModule):
         
         self.filter_hr_to_t = defaultdict(list)
         self.filter_tr_to_h = defaultdict(list)
+        triple_train = KGCDataset(self.args, mode="train")
+        self.graph = LinkGraph(triple_train)
 
 
         for mode in ["train", "dev", "test"]:
@@ -491,24 +500,39 @@ class KNNKGEPretrainDataModule(KNNKGEDataModule):
         filter_entity_ids = []
         for item_idx,item in enumerate(items):
             e = item
+            # retrieved neighbors from the knowledge graph
+            neighbor_ids = list(self.graph.get_neighbor_ids(5))
+            num_neighbor = len(neighbor_ids)
             words = self.entity2text[e].split()
-            st = random.randint(0, max(1,len(words)-40))
-            input_ = self.tokenizer(f"The description of {self.tokenizer.mask_token} is {words[st: min(st+200, len(words))]}",
+            # st = random.randint(0, max(1,len(words)-40))
+            # input_ = self.tokenizer(f"The description of {self.tokenizer.mask_token} is {words[st: min(st+200, len(words))]}",
+            #     padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+            #         )
+            # input_ids.append(input_.input_ids)
+            # attention_mask.append(input_.attention_mask)
+            # token_type_ids.append(input_.token_type_ids)
+            # label.append(e)
+
+            input_ = self.tokenizer(self.tokenizer.pad_token * num_neighbor + f"The description of {self.tokenizer.mask_token} is {words}.",
                 padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
                     )
+            # add offset for entity 
+            for i in range(num_neighbor):
+                # [CLS] [PAD] [PAD]....
+                input_.input_ids[i+1] = neighbor_ids[i] + self.st_entity
             input_ids.append(input_.input_ids)
             attention_mask.append(input_.attention_mask)
             token_type_ids.append(input_.token_type_ids)
             label.append(e)
 
-            input_ = self.tokenizer(f"The description of is {words[st: min(st+200, len(words))]} ",f"{self.tokenizer.mask_token} ",
-                padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
-                    )
-            input_ids.append(input_.input_ids)
-            attention_mask.append(input_.attention_mask)
-            token_type_ids.append(input_.token_type_ids)
+            # input_ = self.tokenizer(f"The description of is {words[st: min(st+200, len(words))]} ",f"{self.tokenizer.mask_token} ",
+            #     padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+            #         )
+            # input_ids.append(input_.input_ids)
+            # attention_mask.append(input_.attention_mask)
+            # token_type_ids.append(input_.token_type_ids)
             
-            label.append(e)
+            # label.append(e)
         
         features =  dict(input_ids=input_ids, attention_mask=attention_mask, 
                 token_type_ids=token_type_ids)

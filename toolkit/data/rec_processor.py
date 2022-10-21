@@ -5,7 +5,6 @@ from typing import Dict, List
 
 from collections import Counter, defaultdict
 from multiprocessing import Pool
-from sqlalchemy import case
 from tokenizers import Tokenizer
 from torch.utils.data import Dataset, Sampler, IterableDataset
 from collections import defaultdict

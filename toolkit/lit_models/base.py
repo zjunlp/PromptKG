@@ -53,6 +53,7 @@ class BaseLitModel(pl.LightningModule):
                             help="optimizer class from torch.optim")
         parser.add_argument("--lr", type=float, default=LR)
         parser.add_argument("--weight_decay", type=float, default=0.01)
+        parser.add_argument("--ema_decay", type=float, default=0.0)
         return parser
 
     def forward(self, x):

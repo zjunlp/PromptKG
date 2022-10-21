@@ -128,3 +128,4 @@ test/
 dataset/*
 *.tar.gz
 ./scripts/my*
+output/*

@@ -1,17 +1,11 @@
 import argparse
 import importlib
-from logging import debug
 
 import numpy as np
 import torch
-import fcntl
 import pytorch_lightning as pl
-import lit_models
-import yaml
-import time
-from transformers import AutoConfig
+from lit_models.utils import EMA
 import os
-from models import Trie
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 os.environ["OMP_NUM_THREADS"] = "1" 
@@ -74,7 +68,6 @@ def main():
     parser = _setup_parser()
     args = parser.parse_args()
 
-    # use all the available gpus
     args.gpus = torch.cuda.device_count()
 
     np.random.seed(args.seed)
@@ -83,20 +76,15 @@ def main():
 
     data_class = _import_class(f"data.{args.data_class}")
     litmodel_class = _import_class(f"lit_models.{args.lit_model_class}")
-
-    # config = AutoConfig.from_pretrained(args.model_name_or_path)
-    # # update parameters
-    # config.label_smoothing = args.label_smoothing
     
 
-    # model = model_class.from_pretrained(args.model_name_or_path, config=config)
     # perfered , warp the transformers encoder
     method_name = args.model_class.lower().replace("model","")
     if method_name in metric_list:
         metric_name = metric_list[method_name]
     else:
         metric_name = "hits10"
-    # model = model_class(args) if method
+
     data = data_class(args)
     tokenizer = data.tokenizer
 
@@ -104,9 +92,7 @@ def main():
 
 
 
-    # lit_model = litmodel_class(args=args, tokenizer=tokenizer)
     lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
-    # path = "output/epoch=1-Train/loss=0.92.ckpt"
 
     # if args.checkpoint:
     #     params_dict = torch.load(args.checkpoint, map_location="cpu")['state_dict']
@@ -118,27 +104,27 @@ def main():
     
 
 
+
+    # ----- set up all the callbacks for training and logging ---
+
     logger = pl.loggers.TensorBoardLogger("training/logs")
     if args.wandb:
         logger = pl.loggers.WandbLogger(project="kgc", name=args.dataset)
         logger.log_hyperparams(vars(args))
 
-    # metric_name = "Eval/hits10" if not args.pretrain else  "Train/loss"
-
-    if args.early_stop:
-        early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
     model_checkpoint = pl.callbacks.ModelCheckpoint(monitor=metric_name, mode="max",
         filename='{epoch}-{acc1:.2f}',
         dirpath=os.path.join("output", args.dataset),
         save_weights_only=True,
         every_n_train_steps= None
     )
+    callbacks = [model_checkpoint]
     if args.early_stop:
-        callbacks = [early_callback, model_checkpoint]
-    else:
-        callbacks = [model_checkpoint]
+        early_callback = pl.callbacks.EarlyStopping(monitor=metric_name, mode="max", patience=4)
+        callbacks.append(early_callback)
+    if hasattr(args, "ema_decay") and args.ema_decay != 0.0:
+        callbacks.append(EMA(args.ema_decay, ema_device="cuda"))
 
-    # args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
     
     # if args.checkpoint:
@@ -147,10 +133,10 @@ def main():
     #     return
 
     trainer.fit(lit_model, datamodule=data)
-    # lit_model.load_checkpoint('output/knnkgc_wn18rr.ckpt')
     
     # make sure use one device to test
     args.devices = 1
+    args.accumulate_grad_batches = None
     tester = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs", gpus=args.gpus)
     result = tester.test(lit_model, data)
 
