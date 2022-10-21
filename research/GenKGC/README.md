@@ -1,6 +1,8 @@
 # GenKGC
 Code for our paper "[From Discrimination to Generation: Knowledge Graph Completion with Generative Transformer](https://arxiv.org/pdf/2202.02113.pdf)"
 
+We recommand to run our models in `PromptKG/toolkit`, we will continue to update all features in that repo.
+
 Requirements
 ==========
 To install requirements:
