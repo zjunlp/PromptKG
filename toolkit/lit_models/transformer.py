@@ -877,7 +877,8 @@ class LAMALitModel(BaseLitModel):
 
     def _eval(self, batch, batch_idx, ):
         input_ids = batch['input_ids']
-        masked_indices_list = batch['masked_indices_list']
+        if self.args.pelt:
+            masked_indices_list = batch['masked_indices_list']
         # single label
         labels = batch.pop('labels')
         # filter_entity_ids = batch.pop('filter_entity_ids', [[] for _ in range(input_ids.shape[0])])
@@ -886,7 +887,8 @@ class LAMALitModel(BaseLitModel):
             if k not in ["input_ids", "attention_mask", "token_type_ids", "entity_embeddings", "entity_position_ids"]:
                 batch.pop(k)
         logits = self.model(**batch, return_dict=True).logits[:, :, :self.tokenizer.vocab_size]
-        #_, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        if not self.args.pelt:
+            _, masked_indices_list = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
         bsz = input_ids.shape[0]
         logits = logits[torch.arange(bsz), masked_indices_list]
         # assert logits.shape == labels.shape
@@ -948,17 +950,18 @@ class KGRECLitModel(BaseLitModel):
     def __init__(self, args, tokenizer, **kwargs):
         super().__init__(args)
         self.save_hyperparameters(args)
-        if args.label_smoothing != 0.0:
-            self.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=args.label_smoothing)
-        else:
-            # self.loss_fn = nn.CrossEntropyLoss()
-            # self.last_layer = nn.Sequential(
-            #     SparseMax_good(),
-            #     LOGModel(),
-            # )
-            # t = nn.NLLLoss()
-            # self.loss_fn = lambda x,y: t(self.last_layer(x), y)
-            self.loss_fn = SparseMax(100)
+        self.loss_fn = nn.CrossEntropyLoss()
+        # if args.label_smoothing != 0.0:
+        #     self.loss_fn = LabelSmoothSoftmaxCEV1(lb_smooth=args.label_smoothing)
+        # else:
+        #     # self.loss_fn = nn.CrossEntropyLoss()
+        #     # self.last_layer = nn.Sequential(
+        #     #     SparseMax_good(),
+        #     #     LOGModel(),
+        #     # )
+        #     # t = nn.NLLLoss()
+        #     # self.loss_fn = lambda x,y: t(self.last_layer(x), y)
+        #     self.loss_fn = SparseMax(100)
 
         self.best_acc = 0
         self.tokenizer = tokenizer

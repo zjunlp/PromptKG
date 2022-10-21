@@ -3,9 +3,8 @@ CUDA_VISIBLE_DEVICES=3 python main.py  --max_epochs=10  --num_workers=16 \
    --num_sanity_val_steps 0 \
    --model_class KGRECModel \
    --lit_model_class KGRECLitModel \
-   --label_smoothing 0.2 \
    --data_class KGRECDataModule \
-   --check_val_every_n_epoch 1 \
+   --check_val_every_n_epoch 2 \
    --batch_size 32 \
    --dataset ml20m \
    --eval_batch_size 64 \
