@@ -117,6 +117,34 @@ For each knowledge graph, we have 5 files.
 
 For help or issues using the models, please submit a GitHub issue.
 
+# Citation
+If you use the code, please cite the following paper:
+
+
+```bibtex
+@article{DBLP:journals/corr/abs-2210-00305,
+  author    = {Xin Xie and
+               Zhoubo Li and
+               Xiaohan Wang and
+               Shumin Deng and
+               Feiyu Xiong and
+               Huajun Chen and
+               Ningyu Zhang},
+  title     = {PromptKG: {A} Prompt Learning Framework for Knowledge Graph Representation
+               Learning and Application},
+  journal   = {CoRR},
+  volume    = {abs/2210.00305},
+  year      = {2022},
+  url       = {https://doi.org/10.48550/arXiv.2210.00305},
+  doi       = {10.48550/arXiv.2210.00305},
+  eprinttype = {arXiv},
+  eprint    = {2210.00305},
+  timestamp = {Fri, 07 Oct 2022 15:24:59 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2210-00305.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+```
+
 ## Other KG Representation Open-Source Projects
 
 - [OpenKE](https://github.com/jinzhuoran/CogIE)
