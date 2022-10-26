@@ -129,3 +129,5 @@ k_shot/
 
 faiss_dump.index
 faissidentityid.pkl
+
+.DS_Store
