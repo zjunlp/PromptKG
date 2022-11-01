@@ -96,6 +96,9 @@ VIRTUAL_DEMO_LENGTH_PER_LABEL=2
 LAMBDA_CL=1.0
 ```
 
+## Acknowledgment
+Our code is based on [princeton-nlp/LM-BFF](https://github.com/princeton-nlp/LM-BFF), thanks to the authors!
+
 ## Citation
 
 ```bibtex
