@@ -7,11 +7,7 @@
 
 </div>
 
-**A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models  across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
-
-Correlative Toolkit:
-
-[DeepKE](https://github.com/zjunlp/DeepKE):A Deep Learning Based Knowledge Extraction Toolkit for Knowledge Graph Construction
+**A Prompt Learning Model Zoo with Pre-trained Language Models  across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
 
 Paper:
 [PromptKG: A Prompt Learning Framework for Knowledge Graph Representation Learning and Application](https://arxiv.org/abs/2210.00305)
