@@ -230,10 +230,10 @@ class SimKGCLitModel(BaseLitModel):
         scores = torch.mm(hr_vector, self.entity_embedding.t())
         bsz = len(batch['batch_data'])
         label = []
-        head_ids = []
+        # head_ids = []
         for i in range(bsz):
             d = batch['batch_data'][i]
-            head_ids.append(hr[0])
+            # head_ids.append(hr[0])
             inverse = d.inverse
             hr = tuple(d.hr)
             t = d.t
@@ -252,7 +252,7 @@ class SimKGCLitModel(BaseLitModel):
 
             scores[i][idx] = -100
             # scores[i].index_fill_(0, idx, -1)
-        rerank_by_graph(scores, head_ids)
+        # rerank_by_graph(scores, head_ids)
         _, outputs = torch.sort(scores, dim=1, descending=True)
         _, outputs = torch.sort(outputs, dim=1)
         ranks = outputs[torch.arange(bsz), label].detach().cpu() + 1
