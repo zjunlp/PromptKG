@@ -230,12 +230,12 @@ class SimKGCLitModel(BaseLitModel):
         scores = torch.mm(hr_vector, self.entity_embedding.t())
         bsz = len(batch['batch_data'])
         label = []
-        # head_ids = []
+        head_ids = []
         for i in range(bsz):
             d = batch['batch_data'][i]
-            # head_ids.append(hr[0])
-            inverse = d.inverse
             hr = tuple(d.hr)
+            head_ids.append(hr[0])
+            inverse = d.inverse
             t = d.t
             label.append(t)
             idx = []
