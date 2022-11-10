@@ -245,7 +245,7 @@ class SimKGCLitModel(BaseLitModel):
                         continue
                     idx.append(hh)
             else:
-                for hh in self.trainer.datamodule.filter_tr_to_h.get(hr, []):
+                for hh in self.trainer.datamodule.filter_hr_to_t.get(hr, []):
                     if hh == t:
                         continue
                     idx.append(hh)
