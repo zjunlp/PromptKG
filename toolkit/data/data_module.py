@@ -197,17 +197,16 @@ class KGBERTDataModule(BaseKGCDataModule):
             h, r = triple.hr
             t = triple.t
             inverse = triple.inverse
+            
+            if inverse:
+                h, t = t, h
+            else:
+                pass                
 
             r_input = self.relation2text[r]
             h_input = self.entity2text[h]
             t_input = self.entity2text[t]
 
-            # ==== construct the negative samples
-            if inverse:
-                h, t = t, h
-            else:
-                pass
-                
 
             return self.tokenizer.sep_token.join([h_input, r_input, t_input]), 1
         # negative sampling here
