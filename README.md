@@ -151,7 +151,7 @@ If you use the code, please cite the following paper:
 
 ## Other KG Representation Open-Source Projects
 
-- [OpenKE](https://github.com/jinzhuoran/CogIE)
+- [OpenKE](https://github.com/thunlp/OpenKE)
 - [LibKGE](https://github.com/uma-pi1/kge)
 - [CogKGE](https://github.com/jinzhuoran/CogKGE)
 - [PyKEEN](https://github.com/pykeen/pykeen)
