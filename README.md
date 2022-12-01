@@ -3,7 +3,7 @@
 <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
 
 
-**A Prompt Learning Framework for Knowledge Graph Representation Learning and Application**
+**Prompt Learning-related research works and toolkits for PLM-based Knowledge Graph Representation Learning, Updating and Applications.**
 
 </div>
 
@@ -15,7 +15,7 @@ Paper:
 
 | Directory | Description |
 |-----------|-------------|
-| [toolkit](toolkit) | • A prompt-based toolkit for knowledge graph construction and application |
+| [LambdaKG](lambdaKG) | • A prompt-based toolkit for knowledge graph construction and application |
 | [research](research) | • A collection of research model implementations in Pytorch by researchers |
 | [tutorial-notebooks](tutorial-notebooks) | • Tutorial notebooks for beginners |
 
