@@ -13,7 +13,7 @@
 |-----------|-------------|
 | [research](research) | • A collection of prompt learning-related research model implementations |
 | [LambdaKG](lambdaKG) | • A library and benchmark for PLM-based KG embeddings |
-| [EpsilonKG](epsilonKG) | • A library and benchmark for editing and visulizing KG embeddings |
+| [EpsilonKG](epsilonKG) | • A library and benchmark for editing and visualizing KG embeddings |
 | [tutorial-notebooks](tutorial-notebooks) | • Tutorial notebooks for beginners |
 
 
