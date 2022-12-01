@@ -3,14 +3,10 @@
 <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
 
 
-**Prompt Learning-related research works and toolkits for PLM-based Knowledge Graph Representation Learning, Updating and Applications.**
-
+ 
 </div>
 
-**A Prompt Learning Model Zoo with Pre-trained Language Models  across ```tasks``` (predictive and generative), and ```modalities``` (language, image, vision + language, etc.)**
-
-Paper:
-[PromptKG: A Prompt Learning Framework for Knowledge Graph Representation Learning and Application](https://arxiv.org/abs/2210.00305)
+**Prompt Learning-related research works and toolkits for PLM-based KG Representation Learning, Updating and Applications.**
 
 
 | Directory | Description |
