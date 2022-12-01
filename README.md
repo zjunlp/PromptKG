@@ -6,7 +6,7 @@
  
 </div>
 
-**Prompt Learning-related research works and toolkits for PLM-based KG Representation Learning, Updating and Applications.**
+**Prompt Learning-related research works and toolkits for PLM-based KG Representation Learning, Editing and Applications.**
 
 
 | Directory | Description |
