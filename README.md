@@ -11,8 +11,8 @@
 
 | Directory | Description |
 |-----------|-------------|
-| [LambdaKG](lambdaKG) | • A prompt-based toolkit for knowledge graph construction and application |
 | [research](research) | • A collection of research model implementations in Pytorch by researchers |
+| [LambdaKG](lambdaKG) | • A prompt-based toolkit for knowledge graph construction and application |
 | [tutorial-notebooks](tutorial-notebooks) | • Tutorial notebooks for beginners |
 
 
