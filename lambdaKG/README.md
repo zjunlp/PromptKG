@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/lambda_logo.png" width="350px">
     <p> <b>
         A Prompt Learning Framework for Knowledge Graph  with Pre-trained Language Models.</b>
     </p>
