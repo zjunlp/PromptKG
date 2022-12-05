@@ -28,11 +28,31 @@ classification tasks (MNLI, QNLI, QQP) and one information extraction task (Few-
 
 ## Requirements
 
-The environmental requirements are placed in `GLUE_task` and `RE_task` respectively.
+**Step1** Download the basic code
 
-```setup
+```bash
+git clone --depth 1 https://github.com/zjunlp/PromptKG.git
+```
+
+**Step2** Create a virtual environment using `Anaconda` and enter it.<br>
+
+
+```bash
+conda create -n retroprompt python=3.8
+
+conda activate retroprompt
+```
+   
+**Step3** Enter the task directory
+
+```bash
+cd PrompKG/research/RetroPrompt
+
 pip install -r requirements.txt
 ```
+
+The environmental requirements are placed in `GLUE_task` and `RE_task` respectively.
+
 There are some differences between the environmental requirements of GLUE task and RE task: 
 - The version of `transformers` in the GLUE task is 4.11.3, while the version of `transformers` in the RE task is 4.7.
 - GLUE task based on the `transformers` framework from huggingface , RE task based on the `pytorch_lightning` framework.
