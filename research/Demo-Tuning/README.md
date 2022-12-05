@@ -18,9 +18,28 @@ Recent works have focused on automatically searching discrete or continuous prom
 
 ## Requirements
 
-To run our code, please install dependency packages as following.
+**Step1** Download the basic code
 
-python3 / pytorch 1.9 / transformers 4.9.2
+```bash
+git clone --depth 1 https://github.com/zjunlp/PromptKG.git
+```
+
+**Step2** Create a virtual environment using `Anaconda` and enter it.<br>
+
+
+```bash
+conda create -n demotuning python=3.9
+
+conda activate demotuning
+```
+   
+**Step3** Enter the task directory
+
+```bash
+cd PrompKG/research/Demo-Tuning
+
+pip install -r requirements.txt
+```
 
 ## Data Preparation
 
