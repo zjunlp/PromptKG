@@ -150,3 +150,4 @@ If you use the code, please cite the following paper:
 - [PyG](https://github.com/pyg-team/pytorch_geometric)
 - [CogDL](https://github.com/THUDM/cogdl)
 - [NeuralKG](https://github.com/zjukg/NeuralKG)
+- [KGxBoard](https://github.com/neulab/KGxBoard)
