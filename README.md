@@ -3,11 +3,9 @@
 <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/logo.svg" width="350px">
 
 
- 
-</div>
 
  **A Gallery of Prompt Learning & KG-related research works, toolkits, and paper-list.** 
-
+</div>
 
 | Directory | Description |
 |-----------|-------------|
