@@ -74,58 +74,40 @@
 *Knowledge Probing*
 
 - How Much Knowledge Can You Pack Into the Parameters of a Language Model? in EMNLP 2020.  [\[pdf\]](https://aclanthology.org/2020.emnlp-main.437/)
-- Prompting as Probing: Using Language Models for Knowledge Base Construction, in  [\[pdf\]](https://arxiv.org/abs/2208.11057)
-- Language Models As or For Knowledge Bases
-  *Simon Razniewski, Andrew Yates, Nora Kassner, Gerhard Weikum.   [\[pdf\]](https://arxiv.org/abs/2110.04888)
-- Materialized Knowledge Bases from Commonsense Transformers.** CSRR2022  
-  *Tuan-Phong Nguyen, Simon Razniewski.*[[pdf](https://aclanthology.org/2022.csrr-1.5/)]  
-- Do Language Models Learn Position-Role Mappings?   https://arxiv.org/abs/2202.03611)],2022.2    
-- Time-Aware Language Models as Temporal Knowledge Bases.** TACL2022  
-  *Bhuwan Dhingra, Jeremy R. Cole, Julian Martin Eisenschlos, Daniel Gillick, Jacob Eisenstein, William W. Cohen.*[[pdf](https://aclanthology.org/2022.tacl-1.15/)]  
-- Can Generative Pre-trained Language Models Serve as Knowledge Bases for Closed-book QA?** ACL2021  
-  *Cunxiang Wang, Pai Liu, Yue Zhang.*[[pdf](https://aclanthology.org/2021.acl-long.251/)]  
+- Language Models as Knowledge Bases? in EMNLP 2019. [\[pdf\]](https://aclanthology.org/D19-1250.pdf)
+- Materialized Knowledge Bases from Commonsense Transformers, in CSRR 2022. [\[pdf\]](https://aclanthology.org/2022.csrr-1.5/)
+- Time-Aware Language Models as Temporal Knowledge Bases, in TACL2022.  [\[pdf\]](https://aclanthology.org/2022.tacl-1.15/)
+- Can Generative Pre-trained Language Models Serve as Knowledge Bases for Closed-book QA? in ACL2021.  [\[pdf\]](https://aclanthology.org/2021.acl-long.251/) 
 - Language models as knowledge bases: On entity representations, storage capacity, and paraphrased queries, in EACL2021. [\[pdf\]](https://aclanthology.org/2021.eacl-main.153/)
-- Scientific language models for biomedical knowledge base completion: an empirical study.**  
-  *Rahul Nadkarni, David Wadden, Iz Beltagy, Noah A. Smith, Hannaneh Hajishirzi, Tom Hope.*[[pdf](https://arxiv.org/abs/2106.09700)]  
-- Multilingual LAMA: Investigating knowledge in multilingual pretrained language models.** EACL2021  
-  *Nora Kassner, Philipp Dufter, Hinrich Schütze.*[[pdf](https://aclanthology.org/2021.eacl-main.284/)]  
-- Pre-trained language models as knowledge bases for Automotive Complaint Analysis.**  
-  *V. D. Viellieber, M. Aßenmacher.*[[pdf](https://arxiv.org/abs/2012.02558)],2020.12  
-- How Can We Know What Language Models Know ?** TACL2020  
-  *Zhengbao Jiang, Frank F. Xu, Jun Araki, Graham Neubig.*[[pdf](https://aclanthology.org/2020.tacl-1.28/)]  
-- How Context Affects Language Models' Factual Predictions.**  
-  *Fabio Petroni, Patrick Lewis, Aleksandra Piktus, Tim Rocktäschel, Yuxiang Wu, Alexander H. Miller, Sebastian Riedel.*[[pdf]
+- Scientific language models for biomedical knowledge base completion: an empirical study, in AKBC 2021. [\[pdf\]](https://arxiv.org/abs/2106.09700) 
+- Multilingual LAMA: Investigating knowledge in multilingual pretrained language models, in  EACL2021. [\[pdf\]](https://aclanthology.org/2021.eacl-main.284/)
+- How Can We Know What Language Models Know ? in TACL 2020. [\[pdf\]](https://aclanthology.org/2020.tacl-1.28/)
+- How Context Affects Language Models' Factual Predictions, in AKBC 2020.  [\[pdf\]](https://arxiv.org/abs/2005.04611)
   
 *Knowledge Graph Embedding (We provide a library and benchmark [lambdaKG](https://github.com/zjunlp/PromptKG/tree/main/lambdaKG))*
 
-- KG-BERT: BERT for knowledge graph completion
-
-- StATIK: Structure and Text for Inductive Knowledge Graph
-
-- Joint Language Semantic and Structure Embedding for Knowledge Graph Completion
-
-- Do Pre-trained Models Benefit Knowledge Graph Completion? A Reliable Evaluation and a Reasonable Approach
-
-- Language Models as Knowledge Embeddings
-
-- From Discrimination to Generation: Knowledge Graph Completion with Generative Transformer
-
-- Reasoning Through Memorization: Nearest Neighbor Knowledge Graph Embeddings
- 
+- KG-BERT: BERT for knowledge graph completion, in Arxiv 2020. [\[pdf\]](https://arxiv.org/abs/1909.03193)
+- Structure-Augmented Text Representation Learning for Efficient Knowledge Graph Completion, in WWW 2021.  [\[pdf\]](https://arxiv.org/abs/2004.14781)
+- StATIK: Structure and Text for Inductive Knowledge Graph, in NAACL 2022. [\[pdf\]](https://aclanthology.org/2022.findings-naacl.46/)
+- Joint Language Semantic and Structure Embedding for Knowledge Graph Completion, in COLING.  [\[pdf\]](https://aclanthology.org/2022.coling-1.171/)
+- Knowledge Is Flat: A Seq2Seq Generative Framework for Various Knowledge Graph Completion, in COLING.  [\[pdf\]](https://aclanthology.org/2022.coling-1.352/)
+- Do Pre-trained Models Benefit Knowledge Graph Completion? A Reliable Evaluation and a Reasonable Approach, in ACL 2022.  [\[pdf\]](https://aclanthology.org/2022.findings-acl.282/)
+- Language Models as Knowledge Embeddings, in IJCAI 2022.  [\[pdf\]](https://arxiv.org/abs/2206.12617)
+- From Discrimination to Generation: Knowledge Graph Completion with Generative Transformer, in WWW 2022.  [\[pdf\]](https://arxiv.org/abs/2202.02113)
+- Reasoning Through Memorization: Nearest Neighbor Knowledge Graph Embeddings, in Arxiv 2022.  [\[pdf\]](https://arxiv.org/abs/2201.05575)
 - SimKGC: Simple Contrastive Knowledge Graph Completion with Pre-trained Language Models, in ACL 2022.  [\[pdf\]](https://arxiv.org/abs/2203.02167)
-
-- Sequence to Sequence Knowledge Graph Completion and Question Answering
-
-- Structure-Augmented Text Representation Learning for Efficient Knowledge Graph Completion
+- Sequence to Sequence Knowledge Graph Completion and Question Answering, in ACL 2022.  [\[pdf\]](https://arxiv.org/abs/2203.10321)
 
 *Analysis*
 
-- Knowledgeable or Educated Guess? Revisiting Language Models as Knowledge Bases, in ACL 2022
-- Emergent Abilities of Large Language Models
-- Knowledge Neurons in Pretrained Transformers, in ACL 2022. [\[pdf\]]()
-- Finding Skill Neurons in Pre-trained Transformer-based Language Models
-- Do Prompts Solve NLP Tasks Using Natural Languages? 
-- Rethinking the Role of Demonstrations: What Makes In-Context Learning Work?
+- Knowledgeable or Educated Guess? Revisiting Language Models as Knowledge Bases, in ACL 2021. [\[pdf\]](https://aclanthology.org/2021.acl-long.146/)
+- Can Prompt Probe Pretrained Language Models? Understanding the Invisible Risks from a Causal View, in ACL 2022.  [\[pdf\]](https://arxiv.org/abs/2203.12258)
+- How Pre-trained Language Models Capture Factual Knowledge? A Causal-Inspired Analysis, in ACl 2022. [\[pdf\]](https://arxiv.org/abs/2203.16747)
+- Emergent Abilities of Large Language Models, in Arxiv 2022.  [\[pdf\]](https://arxiv.org/abs/2206.07682)
+- Knowledge Neurons in Pretrained Transformers, in ACL 2022. [\[pdf\]](https://arxiv.org/abs/2104.08696)
+- Finding Skill Neurons in Pre-trained Transformer-based Language Models, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/abs/2211.07349)
+- Do Prompts Solve NLP Tasks Using Natural Languages? in Arxiv 2022.  [\[pdf\]](https://arxiv.org/abs/2203.00902)
+- Rethinking the Role of Demonstrations: What Makes In-Context Learning Work? in EMNLP 2022. [\[pdf\]](https://arxiv.org/abs/2202.12837)
 
 ## Contact Information
 
