@@ -26,6 +26,8 @@
 * Delta Tuning: A Comprehensive Study of Parameter Efficient Methods for Pre-trained Language Models  (on arxiv 2021) \[[paper](https://arxiv.org/abs/2203.06904)\]
 * Pre-train, Prompt, and Predict: A Systematic Survey of Prompting Methods in Natural Language Processing  (ACM Computing Surveys 2021) \[[paper](https://arxiv.org/abs/2107.13586)\]
 * reStructured Pre-training (on arxiv 2022) \[[paper](https://arxiv.org/abs/2206.11147)\]
+* A Survey of Knowledge-Intensive NLP with Pre-Trained Language Models (on arxiv 2022) \[[paper](https://arxiv.org/abs/2202.08772)\]
+* A Survey of Knowledge-Enhanced Pre-trained Language Models  (on arxiv 2022) \[[paper](https://arxiv.org/abs/2211.05994)\]
 * A Review on Language Models as Knowledge Bases  (on arxiv 2022) \[[paper](https://arxiv.org/abs/2204.06031)\]
 
 # Papers
