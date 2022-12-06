@@ -10,23 +10,30 @@
 
 ### Installation
 
-#### **Step1**
+**Step1** Download the basic code
 
-Create the conda env.
-
-```shell
-conda create -n promptkg python=3.8
+```bash
+git clone --depth 1 https://github.com/zjunlp/PromptKG.git
 ```
 
-#### **Step2**
+**Step2** Create a virtual environment using `Anaconda` and enter it.<br>
 
-Install the dependence.
 
-```shell
+```bash
+conda create -n deltakg python=3.8
+
+conda activate deltakg
+```
+   
+**Step3** Enter the task directory and install library
+
+```bash
+cd PrompKG/deltaKG
+
 pip install -r requirements.txt
 ```
 
-#### Step3
+#### Step4
 
 Install our preprocessed datasets and put them into the `dataset` folder.
 
