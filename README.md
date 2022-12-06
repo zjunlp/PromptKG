@@ -9,10 +9,10 @@
 
 | Directory | Description |
 |-----------|-------------|
-| [Research](Research) | • A collection of prompt learning-related **research model implementations** |
-| [LambdaKG](LambdaKG) | • A **library and benchmark** for PLM-based KG embeddings |
-| [DeltaKG](DeltaKG) | • A **library and benchmark** for dynamically editing and visualizing PLM-based KG embeddings |
-| [Tutorial-notebooks](Tutorial-notebooks) | • **Tutorial notebooks** for beginners |
+| [research](research) | • A collection of prompt learning-related **research model implementations** |
+| [lambdaKG](lambdaKG) | • A **library and benchmark** for PLM-based KG embeddings |
+| [deltaKG](deltaKG) | • A **library and benchmark** for dynamically editing and visualizing PLM-based KG embeddings |
+| [tutorial-notebooks](tutorial-notebooks) | • **Tutorial notebooks** for beginners |
 
 # Tutorials
 
