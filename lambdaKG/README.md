@@ -106,3 +106,47 @@ For each knowledge graph, we have 5 files.
 - [ ] add more kgc models based on pretrained language models
 - [ ] add soft prompt in base model.
 - [ ] add more dataset with the same format.
+
+### Contact Information
+
+For help or issues using the models, please submit a GitHub issue.
+
+# Citation
+If you use the code, please cite the following paper:
+
+
+```bibtex
+@article{DBLP:journals/corr/abs-2210-00305,
+  author    = {Xin Xie and
+               Zhoubo Li and
+               Xiaohan Wang and
+               Shumin Deng and
+               Feiyu Xiong and
+               Huajun Chen and
+               Ningyu Zhang},
+  title     = {PromptKG: {A} Prompt Learning Framework for Knowledge Graph Representation
+               Learning and Application},
+  journal   = {CoRR},
+  volume    = {abs/2210.00305},
+  year      = {2022},
+  url       = {https://doi.org/10.48550/arXiv.2210.00305},
+  doi       = {10.48550/arXiv.2210.00305},
+  eprinttype = {arXiv},
+  eprint    = {2210.00305},
+  timestamp = {Fri, 07 Oct 2022 15:24:59 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2210-00305.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+```
+
+## Other KG Representation Open-Source Projects
+
+- [OpenKE](https://github.com/thunlp/OpenKE)
+- [LibKGE](https://github.com/uma-pi1/kge)
+- [CogKGE](https://github.com/jinzhuoran/CogKGE)
+- [PyKEEN](https://github.com/pykeen/pykeen)
+- [GraphVite](https://graphvite.io/)
+- [Pykg2vec](https://github.com/Sujit-O/pykg2vec)
+- [PyG](https://github.com/pyg-team/pytorch_geometric)
+- [CogDL](https://github.com/THUDM/cogdl)
+- [NeuralKG](https://github.com/zjukg/NeuralKG)
