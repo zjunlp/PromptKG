@@ -67,7 +67,7 @@
 *Advanced Tasks*
 - Recommendation as Language Processing (RLP): A Unified Pretrain, Personalized Prompt & Predict Paradigm (P5), in ACM RecSys 2022. [\[pdf\]](https://arxiv.org/abs/2203.13366) 
 - Towards Unified Conversational Recommender Systems via Knowledge-Enhanced Prompt Learning, in KDD 2022.  [\[pdf\]](https://arxiv.org/abs/2206.09363) 
-- PromptEM: Prompt-tuning for Low-resource Generalized Entity Matching, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2207.04802) 
+- PromptEM: Prompt-tuning for Low-resource Generalized Entity Matching, in VLDB 2022. [\[pdf\]](https://arxiv.org/abs/2207.04802) 
 - VIMA: General Robot Manipulation with Multimodal Prompts, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2210.03094)
 - Unbiasing Retrosynthesis Language Models with Disconnection Prompts, in Arxiv 2022. [\[pdf\]](https://chemrxiv.org/engage/chemrxiv/article-details/6328d0b8ba8a6d04fc551df7)
 
