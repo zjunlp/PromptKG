@@ -14,6 +14,21 @@
 | [deltaKG](deltaKG) | • A **library** for dynamically editing and visualizing PLM-based KG embeddings |
 | [tutorial-notebooks](tutorial-notebooks) | • **Tutorial notebooks** for beginners |
 
+# Table of Contents
+
+* [Tutorials](Tutorials)
+* [Surveys](Surveys)
+* [Papers](Papers)
+   * [Knowledge as Prompt](Knowledge-as-Prompt)
+      * [1. Language Understanding](Language-Understanding)
+      * [2. Multimodal](Multimodal)
+      * [3. Advanced Tasks](Advanced-Tasks)
+   * [Prompt (PLMs) for Knowledge](Prompt-(PLMs)-for-Knowledge)
+      * [1. Knowledge Probing](Knowledge-Probing)
+      * [2. Knowledge Graph Embedding](Knowledge-Graph-Embedding)
+      * [3. Analysis](Analysis)
+* [Contact Information](Contact-Information)
+
 # Tutorials
 
 - Zero- and Few-Shot NLP with Pretrained Language Models. AACL 2022 Tutorial  \[[ppt](https://github.com/allenai/acl2022-zerofewshot-tutorial)\] 
