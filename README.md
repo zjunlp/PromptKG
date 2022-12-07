@@ -23,10 +23,10 @@
       * [1. Language Understanding](#Knowledge-as-Prompt)
       * [2. Multimodal](#Knowledge-as-Prompt)
       * [3. Advanced Tasks](#Knowledge-as-Prompt)
-   * [Prompt (PLMs) for Knowledge](#Prompt-(PLMs)-for-Knowledge)
-      * [1. Knowledge Probing](#Prompt-(PLMs)-for-Knowledge)
-      * [2. Knowledge Graph Embedding](#Prompt-(PLMs)-for-Knowledge)
-      * [3. Analysis](#Prompt-(PLMs)-for-Knowledge)
+   * [Prompt (PLMs) for Knowledge](#prompt-plms-for-knowledge)
+      * [1. Knowledge Probing](#prompt-plms-for-knowledge)
+      * [2. Knowledge Graph Embedding](#prompt-plms-for-knowledge)
+      * [3. Analysis](#prompt-plms-for-knowledge)
 * [Contact Information](#Contact-Information)
 
 # Tutorials
