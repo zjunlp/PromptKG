@@ -111,6 +111,7 @@
 - Finding Skill Neurons in Pre-trained Transformer-based Language Models, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/abs/2211.07349)
 - Do Prompts Solve NLP Tasks Using Natural Languages? in Arxiv 2022.  [\[pdf\]](https://arxiv.org/abs/2203.00902)
 - Rethinking the Role of Demonstrations: What Makes In-Context Learning Work? in EMNLP 2022. [\[pdf\]](https://arxiv.org/abs/2202.12837)
+- Do Prompt-Based Models Really Understand the Meaning of their Prompts? in NAACL 2022.  [\[pdf\]](https://arxiv.org/abs/2109.01247)
 
 ## Contact Information
 
