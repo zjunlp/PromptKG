@@ -11,7 +11,7 @@
 |-----------|-------------|
 | [research](research) | • A collection of prompt learning-related **research model implementations** |
 | [lambdaKG](lambdaKG) | • A **library and benchmark** for PLM-based KG embeddings |
-| [deltaKG](deltaKG) | • A **library and benchmark** for dynamically editing and visualizing PLM-based KG embeddings |
+| [deltaKG](deltaKG) | • A **library** for dynamically editing and visualizing PLM-based KG embeddings |
 | [tutorial-notebooks](tutorial-notebooks) | • **Tutorial notebooks** for beginners |
 
 # Tutorials
