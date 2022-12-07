@@ -16,18 +16,18 @@
 
 # Table of Contents
 
-* [Tutorials](Tutorials)
-* [Surveys](Surveys)
-* [Papers](Papers)
-   * [Knowledge as Prompt](Knowledge-as-Prompt)
-      * [1. Language Understanding](Language-Understanding)
-      * [2. Multimodal](Multimodal)
-      * [3. Advanced Tasks](Advanced-Tasks)
-   * [Prompt (PLMs) for Knowledge](Prompt-(PLMs)-for-Knowledge)
-      * [1. Knowledge Probing](Knowledge-Probing)
-      * [2. Knowledge Graph Embedding](Knowledge-Graph-Embedding)
-      * [3. Analysis](Analysis)
-* [Contact Information](Contact-Information)
+* [Tutorials](#Tutorials)
+* [Surveys](#Surveys)
+* [Papers](#Papers)
+   * [Knowledge as Prompt](#Knowledge-as-Prompt)
+      * [1. Language Understanding](#Language-Understanding)
+      * [2. Multimodal](#Multimodal)
+      * [3. Advanced Tasks](#Advanced-Tasks)
+   * [Prompt (PLMs) for Knowledge](#Prompt-(PLMs)-for-Knowledge)
+      * [1. Knowledge Probing](#Knowledge-Probing)
+      * [2. Knowledge Graph Embedding](#Knowledge-Graph-Embedding)
+      * [3. Analysis](#Analysis)
+* [Contact Information](#Contact-Information)
 
 # Tutorials
 
