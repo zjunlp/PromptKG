@@ -13,7 +13,7 @@
 | Directory | Description |
 |-----------|-------------|
 | [research](research) | • A collection of prompt learning-related **research model implementations** |
-| [lambdaKG](lambdaKG) | • A library and benchmark for **PLM-based KG embeddings** |
+| [lambdaKG](lambdaKG) | • A library and benchmark for **PLM-based KG embeddings and applications** |
 | [deltaKG](deltaKG) | • A library for **dynamically editing and visualizing PLM-based KG embeddings** |
 | [tutorial-notebooks](tutorial-notebooks) | • **Tutorial notebooks** for beginners |
 
