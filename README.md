@@ -6,7 +6,7 @@
 
  **A Gallery of Prompt Learning & KG-related research works, toolkits, and paper-list.** 
  
-  ![](https://img.shields.io/github/last-commit/zjunlp/PromptKG?color=green) ![](https://img.shields.io/badge/PaperNumber-59-brightgreen) ![](https://img.shields.io/badge/PRs-Welcome-red) 
+  ![](https://img.shields.io/github/last-commit/zjunlp/PromptKG?color=green) ![](https://img.shields.io/badge/PaperNumber-60-brightgreen) ![](https://img.shields.io/badge/PRs-Welcome-red) 
   
 </div>
 
