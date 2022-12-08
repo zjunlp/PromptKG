@@ -73,7 +73,9 @@
 - LasUIE: Unifying Information Extraction with Latent Adaptive Structure-aware Generative Language Model, in NeurIPS 2022. [\[pdf\]](https://openreview.net/forum?id=a8qX5RG36jd) 
 - Atlas: Few-shot Learning with Retrieval Augmented Language Models, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2208.03299) 
 - Don't Prompt, Search! Mining-based Zero-Shot Learning with Language Models, in ACL 2022. [\[pdf\]](https://arxiv.org/abs/2210.14803) 
-- Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/abs/2210.08536) 
+- Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/abs/2210.08536)
+- Unified Knowledge Prompt Pre-training for Customer Service Dialogues, in CIKM 2022.  [\[pdf\]](https://arxiv.org/abs/2208.14652)
+- Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/pdf/2210.08536.pdf)
 
 *Multimodal*
 
