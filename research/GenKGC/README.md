@@ -3,11 +3,28 @@ Code for our paper "[From Discrimination to Generation: Knowledge Graph Completi
 
 We recommand to run our models in `PromptKG/toolkit`, we will continue to update all features in that repo.
 
-Requirements
-==========
-To install requirements:
+## Requirements
 
+**Step1** Download the basic code
+
+```bash
+git clone --depth 1 https://github.com/zjunlp/PromptKG.git
 ```
+
+**Step2** Create a virtual environment using `Anaconda` and enter it.<br>
+
+
+```bash
+conda create -n genkgc python=3.8
+
+conda activate genkgc
+```
+   
+**Step3** Enter the task directory
+
+```bash
+cd PrompKG/research/GenKGC
+
 pip install -r requirements.txt
 ```
 
