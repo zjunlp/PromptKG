@@ -6,7 +6,7 @@
 
  **A Gallery of Prompt Learning & KG-related research works, toolkits, and paper-list.** 
  
-  ![](https://img.shields.io/github/last-commit/zjunlp/PromptKG?color=green) ![](https://img.shields.io/badge/PaperNumber-60-brightgreen) ![](https://img.shields.io/badge/PRs-Welcome-red) 
+  ![](https://img.shields.io/github/last-commit/zjunlp/PromptKG?color=green) ![](https://img.shields.io/badge/PaperNumber-61-brightgreen) ![](https://img.shields.io/badge/PRs-Welcome-red) 
   
 </div>
 
@@ -91,6 +91,7 @@
 - PromptEM: Prompt-tuning for Low-resource Generalized Entity Matching, in VLDB 2023. [\[pdf\]](https://arxiv.org/abs/2207.04802) 
 - VIMA: General Robot Manipulation with Multimodal Prompts, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2210.03094)
 - Unbiasing Retrosynthesis Language Models with Disconnection Prompts, in Arxiv 2022. [\[pdf\]](https://chemrxiv.org/engage/chemrxiv/article-details/6328d0b8ba8a6d04fc551df7)
+- ProgPrompt: Generating Situated Robot Task Plans using Large Language Models, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2209.11302)
 
 ## Prompt (PLMs) for Knowledge
 
