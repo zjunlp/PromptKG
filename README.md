@@ -92,6 +92,7 @@
 - VIMA: General Robot Manipulation with Multimodal Prompts, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2210.03094)
 - Unbiasing Retrosynthesis Language Models with Disconnection Prompts, in Arxiv 2022. [\[pdf\]](https://chemrxiv.org/engage/chemrxiv/article-details/6328d0b8ba8a6d04fc551df7)
 - ProgPrompt: Generating Situated Robot Task Plans using Large Language Models, in Arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2209.11302)
+- Collaborating with language models for embodied reasoning, in  NeurIPS 2022 Workshop LaReL.  [\[pdf\]](https://openreview.net/pdf?id=YoS-abmWjJc)
 
 ## Prompt (PLMs) for Knowledge
 
