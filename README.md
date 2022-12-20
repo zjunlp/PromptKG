@@ -47,7 +47,8 @@
 * A Survey of Knowledge-Intensive NLP with Pre-Trained Language Models (on arxiv 2022) \[[paper](https://arxiv.org/abs/2202.08772)\]
 * A Survey of Knowledge-Enhanced Pre-trained Language Models  (on arxiv 2022) \[[paper](https://arxiv.org/abs/2211.05994)\]
 * A Review on Language Models as Knowledge Bases  (on arxiv 2022) \[[paper](https://arxiv.org/abs/2204.06031)\]
-* Generative Knowledge Graph Construction: A Review (EMNLP, 2022) \[[paper](https://arxiv.org/pdf/2210.12714.pdf)\]
+* Generative Knowledge Graph Construction: A Review (EMNLP, 2022) \[[paper](https://arxiv.org/abs/2210.12714)\]
+* Reasoning with Language Model Prompting: A Survey (on arxiv 2022) \[[paper](https://arxiv.org/abs/2212.09597)\]
 
 # Papers
 
