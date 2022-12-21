@@ -113,7 +113,9 @@
 *Knowledge Graph Embedding (We provide a library and benchmark [lambdaKG](https://github.com/zjunlp/PromptKG/tree/main/lambdaKG))*
 
 - KG-BERT: BERT for knowledge graph completion, in Arxiv 2020. [\[pdf\]](https://arxiv.org/abs/1909.03193)
+- Multi-Task Learning for Knowledge Graph Completion with Pre-trained Language Models， in Coling 2020.   [\[pdf\]](https://aclanthology.org/2020.coling-main.153.pdf)
 - Structure-Augmented Text Representation Learning for Efficient Knowledge Graph Completion, in WWW 2021.  [\[pdf\]](https://arxiv.org/abs/2004.14781)
+- KEPLER: A Unified Model for Knowledge Embedding and Pre-trained Language Representation, TACL 2021 [\[pdf\]](https://arxiv.org/abs/1911.06136)
 - StATIK: Structure and Text for Inductive Knowledge Graph, in NAACL 2022. [\[pdf\]](https://aclanthology.org/2022.findings-naacl.46/)
 - Joint Language Semantic and Structure Embedding for Knowledge Graph Completion, in COLING.  [\[pdf\]](https://aclanthology.org/2022.coling-1.171/)
 - Knowledge Is Flat: A Seq2Seq Generative Framework for Various Knowledge Graph Completion, in COLING.  [\[pdf\]](https://aclanthology.org/2022.coling-1.352/)
@@ -123,6 +125,11 @@
 - Reasoning Through Memorization: Nearest Neighbor Knowledge Graph Embeddings, in Arxiv 2022.  [\[pdf\]](https://arxiv.org/abs/2201.05575)
 - SimKGC: Simple Contrastive Knowledge Graph Completion with Pre-trained Language Models, in ACL 2022.  [\[pdf\]](https://arxiv.org/abs/2203.02167)
 - Sequence to Sequence Knowledge Graph Completion and Question Answering, in ACL 2022.  [\[pdf\]](https://arxiv.org/abs/2203.10321)
+- LP-BERT: Multi-task Pre-training Knowledge Graph BERT for Link Prediction, in Arxiv 2022. [\[pdf\]](https://arxiv.org/pdf/2201.04843.pdf)
+- Mask and Reason: Pre-Training Knowledge Graph Transformers for Complex Logical Queries, in KDD 2022. [\[pdf\]](https://arxiv.org/pdf/2208.07638.pdf)
+- Knowledge Is Flat: A Seq2Seq Generative framework For Various Knowledge Graph Completion, in Coling 2022. [\[pdf\]](https://arxiv.org/pdf/2209.07299.pdf)
+
+
 
 *Analysis*
 
