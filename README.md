@@ -6,7 +6,10 @@
 
  **A Gallery of Prompt Learning & KG-related research works, toolkits, and paper-list.** 
  
-  ![](https://img.shields.io/github/last-commit/zjunlp/PromptKG?color=green) ![](https://img.shields.io/badge/PaperNumber-61-brightgreen) ![](https://img.shields.io/badge/PRs-Welcome-red) 
+  [![Awesome](https://awesome.re/badge.svg)](https://github.com/zjunlp/Prompt4ReasoningPapers) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+  ![](https://img.shields.io/github/last-commit/zjunlp/PromptKG?color=green) 
+ ![](https://img.shields.io/badge/PRs-Welcome-red) 
   
 </div>
 
