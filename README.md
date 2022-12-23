@@ -49,6 +49,8 @@
 * A Review on Language Models as Knowledge Bases  (on arxiv 2022) \[[paper](https://arxiv.org/abs/2204.06031)\]
 * Generative Knowledge Graph Construction: A Review (EMNLP, 2022) \[[paper](https://arxiv.org/abs/2210.12714)\]
 * Reasoning with Language Model Prompting: A Survey (on arxiv 2022) \[[paper](https://arxiv.org/abs/2212.09597)\]
+* Reasoning over Different Types of Knowledge Graphs: Static, Temporal and Multi-Modal (on arxiv 2022)  \[[paper](https://arxiv.org/abs/2212.05767)\]
+
 
 # Papers
 
