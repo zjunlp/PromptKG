@@ -82,6 +82,7 @@
 - Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/abs/2210.08536)
 - Unified Knowledge Prompt Pre-training for Customer Service Dialogues, in CIKM 2022.  [\[pdf\]](https://arxiv.org/abs/2208.14652)
 - Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/pdf/2210.08536.pdf)
+- SELF-INSTRUCT: Aligning Language Model with Self Generated Instructions, in arxiv 2022.  [\[pdf\]](https://arxiv.org/pdf/2212.10560v1.pdf)
 
 *Multimodal*
 
