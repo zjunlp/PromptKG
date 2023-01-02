@@ -151,6 +151,7 @@
 - Rethinking the Role of Demonstrations: What Makes In-Context Learning Work? in EMNLP 2022. [\[pdf\]](https://arxiv.org/abs/2202.12837)
 - Do Prompt-Based Models Really Understand the Meaning of their Prompts? in NAACL 2022.  [\[pdf\]](https://arxiv.org/abs/2109.01247)
 - When Not to Trust Language Models: Investigating Effectiveness and Limitations of Parametric and Non-Parametric Memories, in arxiv 2022.  [\[pdf\]](https://akariasai.github.io/files/llm_memorization.pdf)
+- Why Can GPT Learn In-Context? Language Models Secretly Perform Gradient Descent as Meta-Optimizers，in arxiv 2022.  [\[pdf\]](https://arxiv.org/pdf/2212.10559.pdf)
 
 ## Contact Information
 
