@@ -84,6 +84,8 @@
 - Knowledge Prompting in Pre-trained Language Model for Natural Language Understanding, in EMNLP 2022.  [\[pdf\]](https://arxiv.org/pdf/2210.08536.pdf)
 - SELF-INSTRUCT: Aligning Language Model with Self Generated Instructions, in arxiv 2022.  [\[pdf\]](https://arxiv.org/pdf/2212.10560.pdf)
 - One Embedder, Any Task: Instruction-Finetuned Text Embeddings, in arxiv 2022.  [\[pdf\]](https://arxiv.org/pdf/2212.09741.pdf)
+- Learning To Retrieve Prompts for In-Context Learning, in NAACL 2022. [\[pdf\]](https://aclanthology.org/2022.naacl-main.191.pdf)
+- Training Data is More Valuable than You Think: A Simple and Effective Method by Retrieving from Training Data, in ACL 2022. [\[pdf\]](https://aclanthology.org/2022.acl-long.226.pdf)
 
 
 *Multimodal*
