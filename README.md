@@ -4,7 +4,7 @@
 
 
 
- **A Gallery of Prompt Learning & KG-related research works, toolkits, and paper-list.** 
+ **PromptKG Family: a Gallery of Prompt Learning & KG-related research works, toolkits, and paper-list.** 
  
   [![Awesome](https://awesome.re/badge.svg)](https://github.com/zjunlp/Prompt4ReasoningPapers) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
