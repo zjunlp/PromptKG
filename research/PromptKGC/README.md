@@ -9,10 +9,28 @@ This project is mainly about the dataset and code of the prompt-based few-shot k
 
 We have placed under `dataset` the already processed dataset of low-sample knowledge graphs for scholars to use.
 
-## Dependencies
-Use ``pip`` to download the dependency libraries needed for the code
+## Requirements
 
-```shell
+**Step1** Download the basic code
+
+```bash
+git clone --depth 1 https://github.com/zjunlp/PromptKG.git
+```
+
+**Step2** Create a virtual environment using `Anaconda` and enter it.<br>
+
+
+```bash
+conda create -n promptkgc python=3.8
+
+conda activate promptkgc
+```
+   
+**Step3** Enter the task directory
+
+```bash
+cd PrompKG/research/PromptKGC
+
 pip install -r requirements.txt
 ```
 

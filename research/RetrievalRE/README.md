@@ -23,13 +23,31 @@ Code for the SIGIR 2022 short paper "[Relation Extraction as Open-book Examinati
 The inference procedure of our RetrievalRE.
 
 
-# Requirements
+## Requirements
 
-To install requirements:
+**Step1** Download the basic code
 
+```bash
+git clone --depth 1 https://github.com/zjunlp/PromptKG.git
 ```
+
+**Step2** Create a virtual environment using `Anaconda` and enter it.<br>
+
+
+```bash
+conda create -n retrievalre python=3.8
+
+conda activate retrievalre
+```
+   
+**Step3** Enter the task directory
+
+```bash
+cd PrompKG/research/RetrievalRE
+
 pip install -r requirements.txt
 ```
+
 
 # Datasets
 

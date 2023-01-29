@@ -1,0 +1,11 @@
+deepspeed==0.6.4
+ipython==8.4.0
+marisa_trie==0.7.7
+numpy==1.19.2
+pytorch_lightning==1.6.3
+PyYAML==6.0
+scikit_learn==1.1.2
+torch==1.8.0+cu111
+torchmetrics==0.6.0
+tqdm==4.62.3
+transformers==4.6.0
