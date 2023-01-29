@@ -1,7 +1,7 @@
-dataset="FB15k-237"
+dataset="WN18RR"
 
-CUDA_VISIBLE_DEVICES=0,2 python main.py  \
-   --max_epochs=21  --num_workers=8 \
+CUDA_VISIBLE_DEVICES=3 python main.py  \
+   --max_epochs=60  --num_workers=8 \
    --model_name_or_path  facebook/bart-base \
    --model_class BartKGC \
    --strategy="deepspeed_stage_2" \
@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES=0,2 python main.py  \
    --data_class KGT5DataModule \
    --precision 16 \
    --batch_size 64 \
-   --accumulate_grad_batches 4 \
+   --accumulate_grad_batches 1 \
    --prefix_tree_decode 1 \
    --check_val_every_n_epoch 10 \
    --wandb \

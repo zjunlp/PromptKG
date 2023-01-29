@@ -121,17 +121,20 @@ class KGT5DataModule(BaseKGCDataModule):
             h_input = self.entity2text[h]
             # ! warning, hard coded
             t_input = self.entity2text[t].split(",")[0]
+            h_entity_input = self.entity2text[h].split(",")[0]
 
-            return h_input, r_input, t_input
+            return h_input, r_input, t_input, h_entity_input 
         
 
         text = [convert_triple_to_text(_) for _ in items]
         inputs_h = [_[0] for _ in text]
         inputs_r = [_[1] for _ in text]
         outputs = [_[2] for _ in text]
+        outputs_h = [_[3] for _ in text]
 
         inputs_tokenized = self.tokenizer(inputs_h, inputs_r, padding='max_length', truncation="longest_first", max_length=self.args.max_seq_length, return_tensors="pt")
         outputs_tokenized = self.tokenizer(outputs, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+        outputs_h_entity_tokenized = self.tokenizer(outputs_h, padding='max_length', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
         input_ids, attention_mask = inputs_tokenized.input_ids, inputs_tokenized.attention_mask
         labels, labels_attention_mask = outputs_tokenized.input_ids, outputs_tokenized.attention_mask
         # for labels, set -100 for padding

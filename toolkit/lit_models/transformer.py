@@ -584,6 +584,8 @@ class KGT5LitModel(BaseLitModel):
 
     def _init_model(self):
         model = T5KBQAModel.from_pretrained(self.args.model_name_or_path)
+        if not self.args.use_ce_loss:
+            model.loss_fn = SparseMax(10)
         return model
 
     def forward(self, x):
@@ -592,7 +594,11 @@ class KGT5LitModel(BaseLitModel):
     def training_step(self, batch, batch_idx):  # pylint: disable=unused-argument
         # batch.pop("filter_ent_ids")
         bsz = batch['input_ids'].shape[0]
-        loss = self.model(**batch).loss
+        output = self.model(**batch)
+        loss = output.loss
+        # lm_logits = output.lm_logits
+
+
         self.log("Train/loss", loss)
         return loss
     
@@ -768,6 +774,15 @@ class KGT5LitModel(BaseLitModel):
             default=0.1,
             help="Number of examples to operate on per forward step.")
 
+        parser.add_argument(
+            "--self_negative",
+            type=int,
+            default=0,
+            help="Number of examples to operate on per forward step.")
+        
+        
+        parser.add_argument("--use_ce_loss", type=int, default=1, help="")
+
         return parser
 
 
@@ -782,7 +797,7 @@ class KGBartLitModel(KGT5LitModel):
             model.loss_fn = LabelSmoothSoftmaxCEV1(
                 lb_smooth=self.args.label_smoothing)
         else:
-            model.loss_fn = SparseMax(50)
+            model.loss_fn = SparseMax(10)
         return model
 
     @staticmethod
