@@ -121,8 +121,8 @@
 - Multilingual LAMA: Investigating knowledge in multilingual pretrained language models, in  EACL2021. [\[pdf\]](https://aclanthology.org/2021.eacl-main.284/)
 - How Can We Know What Language Models Know ? in TACL 2020. [\[pdf\]](https://aclanthology.org/2020.tacl-1.28/)
 - How Context Affects Language Models' Factual Predictions, in AKBC 2020.  [\[pdf\]](https://arxiv.org/abs/2005.04611)
-- COPEN: Probing Conceptual Knowledge in Pre-trained Language Models, in EMNLP 2022. [\[pdf]\](https://arxiv.org/abs/2211.04079)
-- Probing Simile Knowledge from Pre-trained Language Models,  in ACL 2022. [\[pdf]\](https://aclanthology.org/2022.acl-long.404.pdf)
+- COPEN: Probing Conceptual Knowledge in Pre-trained Language Models, in EMNLP 2022. [\[pdf\]](https://arxiv.org/abs/2211.04079)
+- Probing Simile Knowledge from Pre-trained Language Models,  in ACL 2022. [\[pdf\]](https://aclanthology.org/2022.acl-long.404.pdf)
   
 *Knowledge Graph Embedding (We provide a library and benchmark [lambdaKG](https://github.com/zjunlp/PromptKG/tree/main/lambdaKG))*
 
