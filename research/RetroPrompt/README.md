@@ -63,12 +63,13 @@ There are some differences between the environmental requirements of GLUE task a
 
 ### 1. Generate GLUE data
 
-Download the original datasets (Few-NERD, SST-2, MR, CR, MNLI, QNLI, QQP, RTE, MPQA) from [here](https://nlp.cs.princeton.edu/projects/lm-bff/datasets.tar). We take `k=16` or `k=4` and 5 different seeds includes `13, 21, 42, 87, 100` in few-shot learning. You can run the following command to generate the few-shot data of GLUE tasks. Then the generated data will be placed in `data/training_data/k_shot`:
+Download the original GLUE datasets (SST-2, MR, CR, MNLI, QNLI, QQP, RTE, MPQA) from [here](https://nlp.cs.princeton.edu/projects/lm-bff/datasets.tar). We take `k=16` or `k=4` and 5 different seeds includes `13, 21, 42, 87, 100` in few-shot learning. You can run the following command to generate the few-shot data of GLUE tasks. Then the generated data will be placed in `data/training_data/k_shot`:
 ```bash
 # take SST-2 and 16-shot as example
 cd GLUE_task
 python tools/generate_k_shot_data.py --k 16 --task SST-2
 ```
+The original Few-NERD dataset can be downloaded from [here](https://github.com/thunlp/Few-NERD#get-the-data).
 
 ### 2. Generate RE data
 
