@@ -44,8 +44,11 @@ class BaseLitModel(pl.LightningModule):
         self.lr = self.args.get("lr", LR)
         self.checkpoint = self.args.get("checkpoint")
 
+        
+        self._init_model()
+
     def _init_model(self,):
-        raise NotImplementedError
+        return None
 
     @staticmethod
     def add_to_argparse(parser):

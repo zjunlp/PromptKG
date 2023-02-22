@@ -20,6 +20,7 @@ from models.trie import get_end_to_end_prefix_allowed_tokens_fn_hf
 from models.model import BartKGC
 from models.trie import get_trie
 from models import *
+from transformers import AutoConfig
 
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
@@ -39,7 +40,9 @@ __all__ = (
     "KGT5KGCLitModel",
     "KGRECLitModel",
     "KGRECPretrainLitModel",
-    "KGBERTLitModel"
+    "KGBERTLitModel",
+    "KNNKGELitModel_MIX",
+    "KGBERTLitModelForCommonSense"
 )
 
 def lmap(f: Callable, x: Iterable) -> List:
@@ -311,6 +314,7 @@ class LOGModel(nn.Module):
 
 class KNNKGELitModel(BaseLitModel):
 
+
     def __init__(self, args, tokenizer, **kwargs):
         super().__init__(args)
         self.save_hyperparameters(args)
@@ -328,10 +332,12 @@ class KNNKGELitModel(BaseLitModel):
             self.loss_fn = SparseMax(100)
         self.best_acc = 0
         self.tokenizer = tokenizer
-        self.model = KNNKGEModel.from_pretrained(args.model_name_or_path)
+        # self.model = KNNKGEModel.from_pretrained(args.model_name_or_path)
+        # self.
 
         # self.__dict__.update(data_config)
         # resize the word embedding layer
+        # self.
 
         self.decode = partial(decode, tokenizer=self.tokenizer)
         
@@ -502,8 +508,73 @@ class KNNKGELitModel(BaseLitModel):
                             default=0.1,
                             help="")
         parser.add_argument("--bce", type=int, default=0, help="")
-        parser.add_argument("--ema_decay", type=float, default=0, help="")
         return parser
+
+
+class KNNKGELitModel_MIX(KNNKGELitModel):
+    def _init_model(self,):
+
+        config = AutoConfig.from_pretrained(self.args.model_name_or_path)
+        config.lr = self.args.lr
+        config.num_ent = self.args.num_ent
+        self.model = KNNKGEModel_MIX.from_pretrained(self.args.model_name_or_path, config=config)
+    
+    def on_fit_start(self) -> None:
+        self.model.resize_token_embeddings(len(self.tokenizer) + self.trainer.datamodule.num_relation)
+
+    def training_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # embed();exit()
+        # print(self.optimizers().param_groups[1]['lr'])
+        # label = batch.pop("label")
+        # input_ids = batch['input_ids']
+        batch.pop('filter_entity_ids')
+        loss = self.model(**batch, return_dict=True)['loss']
+        # _, mask_idx = (input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+        # bs = input_ids.shape[0]
+        # mask_logits = logits[torch.arange(bs),
+                            #  mask_idx][:, self.entity_id_st:self.entity_id_ed]
+
+        # assert mask_idx.shape[0] == bs, "only one mask in sequence!"
+        # loss = self.loss_fn(mask_logits, label)
+
+
+        # if batch_idx == 0:
+        #     print('\n'.join(self.decode(batch['input_ids'][:4])))
+
+        return loss
+    
+    def _eval(
+        self,
+        batch,
+        batch_idx,
+        test=False
+    ):
+        input_ids = batch['input_ids']
+        # single label
+        filter_entity_ids = batch.pop('filter_entity_ids',
+                                      [[] for _ in range(input_ids.shape[0])])
+        ranks = self.model(
+            **batch,
+            return_dict=True, is_test=test)['ranks']
+
+        return dict(ranks=np.array(ranks.cpu()))
+
+    def _eval_full(self, batch, batch_idx):
+        filter_entity_ids = batch.pop('filter_entity_ids',
+                                      [[] for _ in range(input_ids.shape[0])])
+    
+
+    def on_test_start(self):
+        self.model.convert_ent_embeddings_to_embeddings()
+        self.model.ent_embeddings.to(self.device)
+    
+    def test_step(self, batch, batch_idx):  # pylint: disable=unused-argument
+        # ranks = self._eval(batch, batch_idx)
+        result = self._eval(batch, batch_idx, test=True)
+        # self.log("Test/ranks", np.mean(ranks))
+
+        return result
+                            
 
 class KNNKGEPretrainLitModel(KNNKGELitModel):
 
@@ -519,6 +590,57 @@ class KNNKGEPretrainLitModel(KNNKGELitModel):
         self.model.save_pretrained(file_folder)
         self.tokenizer.save_pretrained(file_folder)
 
+class KGBERTLitModelForCommonSense(BaseLitModel):
+    def __init__(self, args, tokenizer=None, **kwargs):
+        super().__init__(args)
+
+        # self.save_hyperparameters(ignore=['model', 'tokenizer'])
+        self.args = args
+        config = AutoConfig.from_pretrained(args.model_name_or_path)
+        config.num_labels = 1
+        self.model = KGBERTModel.from_pretrained(args.model_name_or_path, config=config)
+        self.criterion = nn.CrossEntropyLoss()
+        self.metric = {}
+        self.auc = torchmetrics.AUC(reorder=True)
+
+    def training_step(self, batch, batch_idx):
+        batch.pop("relation_type")
+        return self.model(**batch).loss
+
+    def validation_step(self, batch, batch_idx):
+        labels = batch.pop("labels")
+        relation_type = batch.pop("relation_type")
+        outputs = self.model(**batch).logits
+        for _, r in enumerate(relation_type):
+            if r not in self.metric:
+                self.metric[r] = torchmetrics.AUC(reorder=True)
+            self.metric[r].update(outputs[_], labels[_])
+        self.auc.update(outputs, labels)
+
+
+    def validation_epoch_end(self, outputs) -> None:
+        for k, v in self.metric.items():
+            self.log(f"auc_{k}", v.compute())
+            v.reset()
+        self.log("auc", self.auc.compute(), on_epoch=True)
+        self.auc.reset()
+
+    def test_step(self, batch, batch_idx):
+        self.validation_step(batch, batch_idx)
+
+    def test_epoch_end(self, outputs) -> None:
+        self.validation_epoch_end(outputs)
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser = BaseLitModel.add_to_argparse(parser)
+
+        parser.add_argument("--label_smoothing",
+                            type=float,
+                            default=0.1,
+                            help="")
+        return parser
+    
 
 class KGBERTLitModel(BaseLitModel):
 
@@ -529,7 +651,8 @@ class KGBERTLitModel(BaseLitModel):
         self.args = args
         self.model = KGBERTModel.from_pretrained(args.model_name_or_path)
         self.criterion = nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.Accuracy()
+        self.metric = torchmetrics.Accuracy()
+
 
     def training_step(self, batch, batch_idx):
         return self.model(**batch).loss

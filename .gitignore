@@ -129,3 +129,10 @@ dataset/*
 *.tar.gz
 ./scripts/my*
 output/*
+lambdaKG/outputs
+lambdaKG/dataset
+lambdaKG/*.7z
+*/*.csv
+*/*.tsv
+*/wandb
+lambdaKG/*

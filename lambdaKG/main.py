@@ -7,6 +7,8 @@ import pytorch_lightning as pl
 from lit_models.utils import EMA
 import os
 
+from models import EmbUpdateCallback
+
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 os.environ["OMP_NUM_THREADS"] = "1" 
 os.environ["MKL_NUM_THREADS"] = "1" 
@@ -85,6 +87,9 @@ def main():
     else:
         metric_name = "hits10"
 
+    if "csk" in args.dataset:
+        metric_name = "auc"
+
     data = data_class(args)
     tokenizer = data.tokenizer
 
@@ -124,6 +129,10 @@ def main():
         callbacks.append(early_callback)
     if hasattr(args, "ema_decay") and args.ema_decay != 0.0:
         callbacks.append(EMA(args.ema_decay, ema_device="cuda"))
+    
+    if "mix" in args.model_class.lower():
+        print("running on cpu-gpu mode...")
+        callbacks.append(EmbUpdateCallback(lit_model.model.ent_embeddings))
 
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, default_root_dir="training/logs")
     

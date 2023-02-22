@@ -93,6 +93,7 @@ class QADataModule(pl.LightningDataModule):
         
 
 
+
 class BaseKGCDataModule(pl.LightningDataModule):
     """
     Base DataModule.
@@ -116,6 +117,15 @@ class BaseKGCDataModule(pl.LightningDataModule):
             self.relation2text = self.get_relation_to_text()
             self.num_entity = len(self.entity2text.keys())
             self.num_relation = len(self.relation2text.keys())
+        
+        
+        self.ent_freq = defaultdict(int)
+        for mode in ["train"]:
+            with open(f"dataset/{self.args.dataset}/{mode}.tsv") as file:
+                for line in file.readlines():
+                    h, r, t = lmap(int,line.strip().split('\t'))
+                    self.ent_freq[h] += 1
+                    self.ent_freq[t] += 1
     
     def get_entity_to_text(self):
         entity2text = {}
@@ -159,6 +169,8 @@ class BaseKGCDataModule(pl.LightningDataModule):
                     h, r, t = lmap(int,line.strip().split('\t'))
                     self.filter_hr_to_t[(h,r)].append(t)
                     self.filter_tr_to_h[(t,r)].append(h)
+                    self.ent_freq[h] += 1
+                    self.ent_freq[t] += 1
         
         self.filter_hr_to_t = {k: list(set(v)) for k, v in self.filter_hr_to_t.items()}
         self.filter_tr_to_h = {k: list(set(v)) for k, v in self.filter_tr_to_h.items()}
@@ -181,7 +193,7 @@ class BaseKGCDataModule(pl.LightningDataModule):
             collate_fn=partial(self.collate_fn, mode="train"), pin_memory=True, drop_last=True)
 
     def val_dataloader(self):
-        return DataLoader(self.data_val, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="dev"), pin_memory=True, drop_last=True)
+        return DataLoader(self.data_val, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="dev"), pin_memory=True, drop_last=False)
 
     def test_dataloader(self):
         return DataLoader(self.data_test, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="test"), pin_memory=True, drop_last=False)

@@ -414,6 +414,34 @@ class LAMASampler(Sampler):
     def __len__(self) -> int:
         return len(self.data_source)
 
+import pandas as pd
+class CommonSenseDataset(Dataset):
+    def __init__(self, args, mode) -> None:
+        super().__init__()
+        self.args = args
+        self.mode = mode
+        self.data = self.loadData()
+
+    def loadData(self):
+        data = []
+        # warning, csv for common sense dataset
+        data = pd.read_csv(f"./dataset/{self.args.dataset}/{self.mode}.csv")
+        tmp_data = []
+        hrt = ['head', 'relation', 'tail']
+        for _ in hrt:
+            data[_] = data[_].astype(str)
+        for _, d in data.iterrows():
+            tmp_data.append([d['head'], d['relation'], d['tail'], int(d['label'])])
+        data = tmp_data
+        return data
+
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, index):
+        return self.data[index]
+
+
 if __name__ == '__main__':
     class ARG(object):
         def __init__(self) -> None:

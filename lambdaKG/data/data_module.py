@@ -1,4 +1,5 @@
 from functools import partial
+import pytorch_lightning as pl
 import os
 import json
 from dataclasses import dataclass
@@ -18,10 +19,13 @@ import numpy as np
 
 from models.utils import construct_mask
 
-from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset, LAMADataset, LAMASampler
-from .base_data_module import BaseKGCDataModule, QADataModule, BaseKGRECDataModule
+from .processor import KGT5Dataset, KGCDataset, PretrainKGCDataset, LAMADataset, LAMASampler, CommonSenseDataset
+from .base_data_module import BaseKGCDataModule, QADataModule, BaseKGRECDataModule, Config
 from .rec_processor import KGRECDataset, PretrainKGRECDataset
 from .utils import LinkGraph, Roberta_utils
+
+
+ENTITY_PADDING_INDEX = 1
 
 def lmap(f, x):
     return list(map(f, x))
@@ -188,6 +192,71 @@ class MetaQADataModule(QADataModule):
         
         return dict(input_ids=inputs, labels=labels)
 
+class CommonSenseDataModule(pl.LightningDataModule):
+    def __init__(self, args,**kwargs):
+        self.args = Config(vars(args)) if args is not None else {}
+        self.batch_size = self.args.get("batch_size", 8)
+        self.num_workers = self.args.get("num_workers", 0)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path)
+        self.num_entity = None
+        self.num_relation = None
+        self.prepare_data_per_node = False
+
+        self.save_hyperparameters()
+
+    def train_dataloader(self):
+        return DataLoader(self.data_train, shuffle=True, batch_size=self.args.batch_size, num_workers=self.args.num_workers, 
+            collate_fn=partial(self.collate_fn, mode="train"), pin_memory=True, drop_last=True)
+
+    def val_dataloader(self):
+        return DataLoader(self.data_val, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="dev"), pin_memory=True, drop_last=False)
+
+    def test_dataloader(self):
+        return DataLoader(self.data_test, shuffle=False, batch_size=self.args.eval_batch_size, num_workers=self.args.num_workers, collate_fn=partial(self.collate_fn, mode="test"), pin_memory=True, drop_last=False)
+
+    def prepare_data(self) -> None:
+        pass
+
+    def setup(self, stage):
+        if stage == "fit":
+            self.data_train = CommonSenseDataset(self.args, mode="train")
+            self.data_val = CommonSenseDataset(self.args, mode="dev")
+        else:
+            self.data_test = CommonSenseDataset(self.args, mode="test")
+
+    def collate_fn(self, items, mode="train"):
+        def get_text(x):
+            # head [sep] relation [sep] tail
+            return self.tokenizer.sep_token.join(x[:3])
+        
+        item_text = list(map(get_text, items))
+        labels = [_[-1] for _ in items]
+
+        inputs = self.tokenizer(item_text, padding='longest', truncation=True, max_length=self.args.max_seq_length, return_tensors="pt")
+        labels = torch.tensor(labels, dtype=torch.float)
+        relation_type = [_[1] for _ in items]
+        inputs.update(dict(labels=labels, relation_type=relation_type))
+        inputs = dict(inputs)
+
+        return inputs
+        
+
+    @staticmethod
+    def add_to_argparse(parser):
+        parser.add_argument(
+            "--batch_size", type=int, default=8, help="Number of examples to operate on per forward step."
+        )
+        parser.add_argument(
+            "--num_workers", type=int, default=0, help="Number of additional processes to load data."
+        )
+        parser.add_argument(
+            "--dataset", type=str, default="FB15k-237", help="Number of additional processes to load data."
+        )
+        parser.add_argument("--model_name_or_path", type=str, default="roberta-base", help="the name or the path to the pretrained model")
+        parser.add_argument("--max_seq_length", type=int, default=256, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--eval_batch_size", type=int, default=8)
+        parser.add_argument("--overwrite_cache", action="store_true", default=False)
+        return parser
 
         
 class KGBERTDataModule(BaseKGCDataModule):
@@ -449,6 +518,144 @@ class KNNKGEDataModule(BaseKGCDataModule):
             features.update(dict(filter_entity_ids=filter_entity_ids))
         return features
 
+
+class KNNKGEDataModule_MIX(BaseKGCDataModule):
+    def __init__(self, args):
+        super().__init__(args)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=True)
+        self.k_negative_samples = args.k_negative_samples
+    
+        self.nega_samp_weight = self._nagative_sampling_weight()
+    
+    @staticmethod
+    def add_to_argparse(parser):
+        BaseKGCDataModule.add_to_argparse(parser)
+        parser.add_argument("--model_name_or_path", type=str, default="roberta-base", help="the name or the path to the pretrained model")
+        parser.add_argument("--max_seq_length", type=int, default=256, help="Number of examples to operate on per forward step.")
+        parser.add_argument("--eval_batch_size", type=int, default=8)
+        parser.add_argument("--overwrite_cache", action="store_true", default=False)
+        parser.add_argument("--max_entity_length", type=int, default=32)
+        parser.add_argument("--k_negative_samples", type=int, default=64)
+
+        return parser
+    
+    def collate_fn(self, items, mode):
+        """_summary_
+            use tokenizer.pad_token as @placeholder for the entity_id
+        """
+        input_ids = []
+        attention_mask = []
+        token_type_ids = []
+        ent_masked_lm_labels = []
+        ent_pos = []
+        ent_index = [] # 负采样使用index
+        filter_entity_ids = []
+        for item_idx, item in enumerate(items):
+            inverse = item.inverse
+            h, r = item.hr
+            t = item.t
+            ent_masked_lm_labels.append(t)
+            if not inverse:
+                input_ = self.tokenizer(self.tokenizer.sep_token.join([self.tokenizer.pad_token, self.entity2text[h]]), 
+                        self.tokenizer.sep_token.join([self.tokenizer.pad_token, self.relation2text[r], self.tokenizer.mask_token]),
+                    padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+                        )
+                cnt = 0
+                for i in range(len(input_.input_ids)):
+                    if input_.input_ids[i] == self.tokenizer.pad_token_id:
+                        if cnt == 2:
+                            break
+                        if cnt == 1:
+                            cnt += 1
+                            input_.input_ids[i] = len(self.tokenizer) + r
+                        if cnt == 0:
+                            cnt += 1
+                            ent_pos.append(i)
+                            input_.input_ids[i] = h
+
+                filter_entity_ids.append(self.filter_hr_to_t[(h, r)])
+                input_ids.append(input_.input_ids)
+                attention_mask.append(input_.attention_mask)
+                token_type_ids.append(input_.token_type_ids)
+            else:
+                input_ = self.tokenizer(self.tokenizer.sep_token.join([self.tokenizer.mask_token, self.tokenizer.pad_token, self.relation2text[r]]), 
+                        self.tokenizer.sep_token.join([self.tokenizer.pad_token, self.entity2text[h]]),
+                    padding='longest', truncation="longest_first", max_length=self.args.max_seq_length,
+                        )
+                cnt = 0
+                for i in range(len(input_.input_ids)):
+                    if input_.input_ids[i] == self.tokenizer.pad_token_id:
+                        if cnt == 2:
+                            break
+                        if cnt == 1:
+                            cnt += 1
+                            ent_pos.append(i)
+                            input_.input_ids[i] = h
+                        if cnt == 0:
+                            cnt += 1
+                            input_.input_ids[i] = len(self.tokenizer) + r
+                input_ids.append(input_.input_ids)
+                attention_mask.append(input_.attention_mask)
+                token_type_ids.append(input_.token_type_ids)
+                filter_entity_ids.append(self.filter_tr_to_h[(h, r)])
+
+        ent_convert_dict = {}
+        for golden_ent in ent_masked_lm_labels:
+            if golden_ent >= 0 and golden_ent not in ent_convert_dict:
+                ent_convert_dict[golden_ent] = len(ent_convert_dict)
+                ent_index.append(golden_ent)
+        
+        ent_masked_lm_labels = [ent_convert_dict[_] for _ in ent_masked_lm_labels]
+        
+        # 针对每一个t，召回负样本，ent_index表示对应id
+        if len(ent_index) > 0:
+            # negative sampling
+            k_negas = self.k_negative_samples * len(ent_index)
+            nega_samples = torch.multinomial(self.nega_samp_weight, num_samples=k_negas, replacement=True)
+            for nega_ent in nega_samples:
+                ent = int(nega_ent)
+                if ent not in ent_convert_dict:  # 保证无重复
+                    ent_convert_dict[ent] = len(ent_convert_dict)
+                    ent_index.append(ent)
+        else:
+            ent_index = [ENTITY_PADDING_INDEX] # 1
+
+        features =  dict(input_ids=input_ids, attention_mask=attention_mask, 
+                token_type_ids=token_type_ids)
+        features = self.tokenizer.pad(
+            features,
+            padding="longest",
+            max_length=self.args.max_seq_length,
+            return_tensors="pt"
+        )
+        _, mask_pos = (features.input_ids == self.tokenizer.mask_token_id).nonzero(as_tuple=True)
+
+        # don't know why
+        b = self.args.batch_size if mode == "train" else self.args.eval_batch_size
+        if len(mask_pos) > b:
+            mask_pos = mask_pos[:b]
+        features.update(dict(filter_entity_ids=filter_entity_ids, 
+                             mask_pos=mask_pos, 
+                             ent_masked_lm_labels = torch.tensor(ent_masked_lm_labels),
+                             ent_pos = torch.tensor(ent_pos),
+                             ent_index = torch.tensor(ent_index)
+                             ))
+
+        return features
+
+    def _nagative_sampling_weight(self, pwr=0.75):
+        ef = []
+        for i in range(self.num_entity):
+            ef.append(self.ent_freq[i])
+        # for i, ent in enumerate(self.ent_vocab.keys()):
+        #     assert self.ent_vocab[ent] == i
+        #     ef.append(self.ent_freq[ent])
+        # freq = np.array([self.ent_freq[ent] for ent in self.ent_vocab.keys()])
+        ef = np.array(ef)
+        ef = ef / ef.sum()
+        ef = np.power(ef, pwr)
+        ef = ef / ef.sum()
+        return torch.FloatTensor(ef)
 
 
 
