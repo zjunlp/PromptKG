@@ -86,6 +86,8 @@
 - One Embedder, Any Task: Instruction-Finetuned Text Embeddings, in arxiv 2022.  [\[pdf\]](https://arxiv.org/pdf/2212.09741.pdf)
 - Learning To Retrieve Prompts for In-Context Learning, in NAACL 2022. [\[pdf\]](https://aclanthology.org/2022.naacl-main.191.pdf)
 - Training Data is More Valuable than You Think: A Simple and Effective Method by Retrieving from Training Data, in ACL 2022. [\[pdf\]](https://aclanthology.org/2022.acl-long.226.pdf)
+- One Model for All Domains: Collaborative Domain-Prefix Tuning for Cross-Domain NER, in Arxiv 2023. [\[pdf\]](https://arxiv.org/pdf/2301.10410.pdf)
+- REPLUG: Retrieval-Augmented Black-Box Language Models, in Arxiv 2023. [\[pdf\]](https://arxiv.org/pdf/2301.12652.pdf)
 
 
 *Multimodal*
@@ -119,6 +121,8 @@
 - Multilingual LAMA: Investigating knowledge in multilingual pretrained language models, in  EACL2021. [\[pdf\]](https://aclanthology.org/2021.eacl-main.284/)
 - How Can We Know What Language Models Know ? in TACL 2020. [\[pdf\]](https://aclanthology.org/2020.tacl-1.28/)
 - How Context Affects Language Models' Factual Predictions, in AKBC 2020.  [\[pdf\]](https://arxiv.org/abs/2005.04611)
+- COPEN: Probing Conceptual Knowledge in Pre-trained Language Models, in EMNLP 2022. [\[pdf\]](https://arxiv.org/abs/2211.04079)
+- Probing Simile Knowledge from Pre-trained Language Models,  in ACL 2022. [\[pdf\]](https://aclanthology.org/2022.acl-long.404.pdf)
   
 *Knowledge Graph Embedding (We provide a library and benchmark [lambdaKG](https://github.com/zjunlp/PromptKG/tree/main/lambdaKG))*
 
