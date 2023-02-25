@@ -20,15 +20,15 @@ git clone --depth 1 https://github.com/zjunlp/PromptKG.git
 
 
 ```bash
-conda create -n deltakg python=3.8
+conda create -n lambdakg python=3.8
 
-conda activate deltakg
+conda activate lambdakg
 ```
    
 **Step3** Enter the task directory and install library
 
 ```bash
-cd PrompKG/deltaKG
+cd PrompKG/lambdaKG
 
 pip install -r requirements.txt
 ```
