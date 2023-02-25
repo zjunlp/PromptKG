@@ -1,7 +1,7 @@
 <div align="center">
     <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/lambda_logo.png" width="550px">
     <p> <b>
-        A Library and BenchmArk for Pre-trained Language Model-Based KnowleDge GrAph Embeddings.</b>
+        A Library for Pre-trained Language Model-Based Knowledge Graph Embeddings.</b>
     </p>
 </div>
 
