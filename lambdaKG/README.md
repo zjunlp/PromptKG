@@ -106,13 +106,9 @@ For each knowledge graph, we have 5 files.
     <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/inspire-1.png" width="750px">
 </div>
 
+### Using Large Langugae Models (LLMs)
 
-## TODO 
 
-- [ ] add essemble-model for using
-- [ ] add more kgc models based on pretrained language models
-- [ ] add soft prompt in base model.
-- [ ] add more dataset with the same format.
 
 ### Contact Information
 
