@@ -90,7 +90,7 @@ We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Quest
 ### Framework
 
 <div align="center">
-    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="550px">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="750px">
 </div>
 
 ### Process on your own data
@@ -103,7 +103,7 @@ For each knowledge graph, we have 5 files.
 ### For downstream tasks
 
 <div align="center">
-    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/inspire-1.png" width="350px">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/inspire-1.png" width="750px">
 </div>
 
 
