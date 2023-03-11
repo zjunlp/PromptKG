@@ -43,6 +43,7 @@ Install our preprocessed datasets and put them into the `dataset` folder.
 |FB15k-237| [google drive](https://drive.google.com/drive/folders/1aNkuAIQeFOfN4B04xnBOzxhMZKNMxoBH?usp=sharing) |   [baidu drive](https://pan.baidu.com/s/1DK0abYqfvtAPamlLULX4BQ)  `ju9t`            |
 | MetaQA  | [google drive](https://drive.google.com/drive/folders/1q4kph9nd4ADjvkPIZvAwYbqza7o7DFt9?usp=sharing) |  [baidu drive](https://pan.baidu.com/s/1AYnfjDAM7z8G3QeEqHTKhg) `hzc9`           |
 | KG20C   | [google drive](https://drive.google.com/drive/folders/1AJCRYiNJUFc7inwvrvarwK2hbZEyDALE?usp=sharing) |  [baidu drive](https://pan.baidu.com/s/18pqe1Zz2iT9vY7v5YadUSQ)  `stnh`           |
+| CSKB  | [google drive](https://drive.google.com/drive/folders/1A8ofqSOw2xuCkfZgZJkZiTIf-pNG45yi?usp=share_link)  | [baidu drive](https://pan.baidu.com/s/11gleLSKhxN5dIJ3opa9h6g?pwd=endu) `endu`
 
 
 
