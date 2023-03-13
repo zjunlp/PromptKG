@@ -2,7 +2,6 @@ from transformers import BertForMaskedLM
 from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
-from .large_embedding import LargeEmbedding
 
 class KNNKGEModel(BertForMaskedLM):
     @staticmethod
