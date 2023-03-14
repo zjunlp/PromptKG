@@ -7,7 +7,6 @@ import pytorch_lightning as pl
 from lit_models.utils import EMA
 import os
 
-from models import EmbUpdateCallback
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 os.environ["OMP_NUM_THREADS"] = "1" 
