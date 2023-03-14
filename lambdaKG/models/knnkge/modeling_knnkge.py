@@ -12,5 +12,3 @@ class KNNKGEModel(BertForMaskedLM):
 
 
 
-class KNNKGEModel_MIX(BertForMaskedLM):
-
