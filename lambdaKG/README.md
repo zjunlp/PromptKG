@@ -113,6 +113,8 @@ For each knowledge graph, we have 5 files.
 
 Before running, please check that you already have the `MidRes.json` available in dataset, or you may run `python ./LLM/create_midres.py` to generate it.
 
+And modify the `api_key = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"` in `./LLM/gpt3kgc.py` with your own openai.api_key.
+
 Once it is available, you can proceed to run the code under the `LLM` folder.
 ```
 python ./LLM/gpt3kgc.py
