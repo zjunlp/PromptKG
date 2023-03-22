@@ -109,6 +109,14 @@ For each knowledge graph, we have 5 files.
 
 ### Using Large Langugae Models (LLMs)
 
+* use text-davince-003 for KGC (Link Prediction)
+
+Before running, please check that you already have the `MidRes.json` available in dataset, or you may run `python ./LLM/create_midres.py` to generate it.
+
+Once it is available, you can proceed to run the code under the `LLM` folder.
+```
+python ./LLM/gpt3kgc.py
+```
 
 
 ### Contact Information
