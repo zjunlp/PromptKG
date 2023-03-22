@@ -6,17 +6,17 @@ middle_reason={}
 entity2text={}
 
 
-fr1=open("../dataset/FB15k-237/entity2text.txt",encoding='utf-8')
+fr1=open("dataset/FB15k-237/entity2text.txt",encoding='utf-8')
 for line in fr1.readlines():
     lines=line.strip('\n').split('\t')
     entity2text[lines[0]]=lines[1]
 
-fr2=open("../dataset/FB15k-237/entity2textlong.txt",encoding='utf-8')
+fr2=open("dataset/FB15k-237/entity2textlong.txt",encoding='utf-8')
 for line in fr2.readlines():
     lines=line.strip('\n').split('\t')
     entity2textlong[lines[0]]=lines[1]
 
-f=open("../dataset/FB15k-237/train.tsv")
+f=open("dataset/FB15k-237/train.tsv")
 
 def build_midres():
     for line in f.readlines():
@@ -35,7 +35,7 @@ def build_midres():
             relv_text=' '+entity2textlong[lines[0]].split('. ')[0]+'.'
         middle_reason["what is the {} of {}? The answer is {}.\n".format(rel,entity2text[lines[0]],entity2text[lines[2]])]=relv_text
 
-wt=open("../dataset/FB15k-237/MidRes.json",'w')
+wt=open("dataset/FB15k-237/MidRes.json",'w')
 build_midres()
 jstr=json.dumps(middle_reason)
 json.dump(jstr,wt)
