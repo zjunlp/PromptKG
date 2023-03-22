@@ -19,10 +19,10 @@ def _setup_parser():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--candidate_num", type=int, default=100)
     parser.add_argument("--demonstrations_num", type=int, default=5)
-    parser.add_argument("--entity_path",default="../dataset/FB15k-237/entity2text.txt")
-    parser.add_argument("--corpus_path",default="../dataset/FB15k-237/train.tsv")
-    parser.add_argument("--rationale_path",default="../dataset/FB15k-237/MidRes.json")
-    parser.add_argument("--path",default="../dataset/FB15k-237/test.tsv")
+    parser.add_argument("--entity_path",default="dataset/FB15k-237/entity2text.txt")
+    parser.add_argument("--corpus_path",default="dataset/FB15k-237/train.tsv")
+    parser.add_argument("--rationale_path",default="dataset/FB15k-237/MidRes.json")
+    parser.add_argument("--path",default="dataset/FB15k-237/test.tsv")
     parser.add_argument("--help", "-h", action="help") 
 
     return parser
