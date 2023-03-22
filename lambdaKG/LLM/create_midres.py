@@ -35,7 +35,7 @@ def build_midres():
             relv_text=' '+entity2textlong[lines[0]].split('. ')[0]+'.'
         middle_reason["what is the {} of {}? The answer is {}.\n".format(rel,entity2text[lines[0]],entity2text[lines[2]])]=relv_text
 
-wt=open("../dataset/FB15k-237/MidRes1.json",'w')
+wt=open("../dataset/FB15k-237/MidRes.json",'w')
 build_midres()
 jstr=json.dumps(middle_reason)
 json.dump(jstr,wt)
