@@ -120,6 +120,18 @@ Once it is available, you can proceed to run the code under the `LLM` folder.
 python ./LLM/gpt3kgc.py
 ```
 
+* use text-davince-001/002/003 for commonsense reasoning
+
+Before running, please check that you already have downloaded the ATOMIC2020 dataset to `dataset/atomic_2020_data` and have the file `dataset/atomic_2020_data/test.jsonl` available in dataset, or you may run `python LLM/atomic2020_process.py` to generate it.
+
+And modify the `api_key = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"` in `./LLM/atomic2020_res.py` with your own openai.api_key.
+
+Once it is available, you can proceed to run the following code:
+```
+python LLM/atomic2020_res.py
+```
+
+After running, result file `test_result.json` is available under fold `dataset/atomic_2020_data`.
 
 ### Contact Information
 

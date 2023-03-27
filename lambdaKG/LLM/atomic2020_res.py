@@ -1,7 +1,7 @@
 import openai
 import jsonlines
 import time
-from prompt import gen_prompt
+from LLM.prompt import gen_prompt
 from easyinstruct import BasePrompt
 from easyinstruct.utils import set_openai_key, set_proxy
 
@@ -58,7 +58,7 @@ def get_output(prompt, line):
     
 if __name__ == '__main__':
     data = []
-    with jsonlines.open('data/test.jsonl') as fp:
+    with jsonlines.open('dataset/atomic_2020_data/test.jsonl') as fp:
         for line in fp:
             data.append(line)
     all_res = []
@@ -86,5 +86,5 @@ if __name__ == '__main__':
             greedy = res['result'].strip(),
         ))
 
-    with jsonlines.open('test_result.json', 'w') as fp:
+    with jsonlines.open('dataset/atomic_2020_data/test_result.json', 'w') as fp:
         fp.write_all(results_process)
