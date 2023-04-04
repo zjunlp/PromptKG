@@ -22,7 +22,7 @@ with open("LLM/sample.json") as fp:
     
 with jsonlines.open('dataset/atomic_2020_data/test.jsonl', 'w') as fp:
     for line in all_data:
-        rel = line.strip().strip().split("@@")[1].strip()
+        rel = line.strip().split('\t')[0].split("@@")[1].strip()
         examples = sample[rel]
         one_test = dict(query=line.split('\t')[0], examples=examples, answer=line.strip().split('\t')[1].split('| '))
         fp.write(one_test)
