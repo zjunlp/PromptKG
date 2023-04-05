@@ -73,6 +73,7 @@
 - Contrastive Demonstration Tuning for Pre-trained Language Models, in EMNLP 2022 (Findings). [\[pdf\]](https://arxiv.org/abs/2204.04392)
 - AdaPrompt: Adaptive Model Training for Prompt-based NLP, in arxiv 2022. [\[pdf\]](https://arxiv.org/abs/2202.04824)
 - KnowPrompt: Knowledge-aware Prompt-tuning with Synergistic Optimization for Relation Extraction, in WWW 2022. [\[pdf\]](https://arxiv.org/abs/2104.07650)
+- Schema-aware Reference as Prompt Improves Data-Efficient Knowledge Graph Construction, in SIGIR 2023. [\[pdf\]](https://arxiv.org/abs/2210.10709)
 - Decoupling Knowledge from Memorization: Retrieval-augmented Prompt Learning, in NeurIPS 2022. [\[pdf\]](https://arxiv.org/abs/2205.14704)
 - Relation Extraction as Open-book Examination: Retrieval-enhanced Prompt Tuning, in SIGIR 2022. [\[pdf\]](https://arxiv.org/abs/2205.02355)
 - LightNER: A Lightweight Tuning Paradigm for Low-resource NER via Pluggable Prompting, in COLING 2022. [\[pdf\]](https://aclanthology.org/2022.coling-1.209/)
