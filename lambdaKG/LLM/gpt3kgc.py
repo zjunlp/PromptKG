@@ -20,13 +20,14 @@ def _setup_parser():
     parser.add_argument("--candidate_num", type=int, default=100)
     parser.add_argument("--demonstrations_num", type=int, default=5)
     parser.add_argument("--entity_path",default="dataset/FB15k-237/entity2text.txt")
+    parser.add_argument("--relation_path",default="dataset/FB15k-237/relations.txt")
     parser.add_argument("--corpus_path",default="dataset/FB15k-237/train.tsv")
     parser.add_argument("--rationale_path",default="dataset/FB15k-237/MidRes.json")
     parser.add_argument("--path",default="dataset/FB15k-237/test.tsv")
     parser.add_argument("--help", "-h", action="help") 
 
     return parser
-    
+
 
 def load_entity(fpath):
     #entity -> text entity2text{ID:txt}
@@ -34,17 +35,26 @@ def load_entity(fpath):
     entity2text={}
     for line in fr2.readlines():
         lines=line.strip('\n').split('\t')
-        entity2text[lines[0]]=lines[1]
+        entity2text[lines[0]]=lines[1].split(',')[0]
 
     return entity2text
 
-def load_corpus(fpath,entity2text):
+def load_relation(fpath):
+    fr2=open(fpath,encoding='utf-8')
+    relation={}
+    c=0
+    for line in fr2.readlines():
+        relation[str(c)]= line.strip('\n')
+        c+=1
+    return relation
+
+def load_corpus(fpath,relation,entity2text):
     # use the train set as the corpus
     corpus=[]
     f=open(fpath,'r')
     for line in f.readlines():
         lines= line.strip('\n').split('\t')
-        rel = lines[1].split('/')[-1].replace('_',' ')
+        rel = relation[lines[1]].split('/')[-1].replace('_',' ')
         corpus.append("what is the {} of {}? The answer is {}.\n".format(rel,entity2text[lines[0]],entity2text[lines[2]]))
     return corpus
 
@@ -62,10 +72,11 @@ def find_bm25(corpus):
     return bm25
 
 def run(args):
-    candidate_num=args.candidate_num
+candidate_num=args.candidate_num
     demonstrations_num=args.demonstrations_num
     entity2text=load_entity(args.entity_path)
-    corpus=load_corpus(args.corpus_path,entity2text)
+    relations = load_relation(args.relation_path)
+    corpus=load_corpus(args.corpus_path,relations,entity2text)
     bm25=find_bm25(corpus)
     middle_reason=load_rationales(args.rationale_path)
 
@@ -78,7 +89,7 @@ def run(args):
     while line:
         total+=1
         items=line.strip('\n').split('\t')
-        rel = items[1].split('/')[-1].replace('_',' ')
+        rel = relations[items[1]].split('/')[-1].replace('_',' ')
 
         query = "what is the {} of {}?".format(rel,entity2text[items[0]])
 
