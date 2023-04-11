@@ -72,7 +72,7 @@ def find_bm25(corpus):
     return bm25
 
 def run(args):
-candidate_num=args.candidate_num
+    candidate_num=args.candidate_num
     demonstrations_num=args.demonstrations_num
     entity2text=load_entity(args.entity_path)
     relations = load_relation(args.relation_path)
