@@ -12,7 +12,7 @@ instruct_prompt=f"given head entity and relation, predict the tail entity from t
 api_key = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 set_openai_key(api_key)
-set_proxy("http://127.0.0.1:7890")
+# set_proxy("http://127.0.0.1:7890")
 
 def _setup_parser():
     """Set up Python's ArgumentParser with data, model, trainer, and other arguments."""
@@ -130,6 +130,7 @@ def run(args):
 
 def test_on_gpt3(prompt,answer,count):
     try:
+        # use easyinstruct from https://github.com/zjunlp/EasyInstruct
         promts = BasePrompt()
         promts.build_prompt(prompt)
         response = promts.get_openai_result(engine = "text-davinci-003", temperature = 0.5, max_tokens = 200)
@@ -145,7 +146,7 @@ def test_on_gpt3(prompt,answer,count):
         #     )
         time.sleep(1.5)
     except:
-        print("An error occurred while calling the OpenAI API for text-davinci-003!")
+        raise Exception("An error occurred while calling the OpenAI API for text-davinci-003! ")
 
     if answer in response['choices'][0]['text']:
         count+=1
