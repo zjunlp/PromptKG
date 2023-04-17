@@ -3,8 +3,28 @@
     <p> <b>
         A Library for Pre-trained Language Model-Based Knowledge Graph Embeddings.</b>
     </p>
+    
+------
+
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#run-your-first-experiment">How To Use</a> •
+  <a href="https://arxiv.org/abs/2210.00305">Paper</a> •
+  <a href="#citation">Citation</a> •
+  <a href="#other-kg-representation-open-source-projects">Others</a> 
+</p>
 </div>
 
+## Overview
+Knowledge Graphs (KGs) often have two characteristics: heterogeneous graph structure and text-rich entity/relation information. Text-based KG embeddings can represent entities by encoding descriptions with pre-trained language models, but no open-sourced library is specifically designed for KGs with PLMs at present. 
+
+We present **LambdaKG**, a library for KGE that equips with many pre-trained language models (e.g., BERT, BART, T5, GPT-3), and supports various tasks (e.g., knowledge graph completion, question answering, recommendation, and knowledge probing). 
+
+**LambdaKG** is now publicly open-sourced , with [a demo video](https://www.bilibili.com/video/BV1ZY4y1C7bt/) and long-term maintenance.
+<div align="center">
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="750px">
+</div>
 
 ## Quick Start
 
@@ -88,11 +108,7 @@ We provide four tasks in our toolkit as Knowledgeg Graph Completion (KGC), Quest
 | kNN-KGE |  ✔   |    | ✔  |✔ |
 | SimKGC |  ✔   |      | | | 
 
-### Framework
 
-<div align="center">
-    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="750px">
-</div>
 
 ### Process on your own data
 
