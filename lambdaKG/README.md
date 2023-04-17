@@ -11,6 +11,7 @@
   <a href="#installation">Installation</a> •
   <a href="#run-your-first-experiment">How To Use</a> •
   <a href="https://arxiv.org/abs/2210.00305">Paper</a> •
+  <a href="https://medium.com/@jack16900/lambdakg-a-library-for-pre-trained-language-model-based-knowledge-graph-embeddings-728d15c6f994">Medium</a> •
   <a href="#citation">Citation</a> •
   <a href="#other-kg-representation-open-source-projects">Others</a> 
 </p>
@@ -21,7 +22,7 @@ Knowledge Graphs (KGs) often have two characteristics: heterogeneous graph struc
 
 We present **LambdaKG**, a library for KGE that equips with many pre-trained language models (e.g., BERT, BART, T5, GPT-3), and supports various tasks (e.g., knowledge graph completion, question answering, recommendation, and knowledge probing). 
 
-**LambdaKG** is now publicly open-sourced , with [a demo video](https://www.bilibili.com/video/BV1ZY4y1C7bt/) and long-term maintenance.
+**LambdaKG** is now publicly open-sourced, with [a demo video](https://www.bilibili.com/video/BV1ZY4y1C7bt/) and long-term maintenance.
 <div align="center">
     <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/framework-1.png" width="750px">
 </div>
