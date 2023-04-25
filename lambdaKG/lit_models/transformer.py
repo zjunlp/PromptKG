@@ -765,9 +765,10 @@ class KGT5LitModel(BaseLitModel):
     ):
         labels = batch.pop("labels")
         bsz = batch['input_ids'].shape[0]
-
-        batch_data = batch.pop("batch_data")
-        self.filter_entity_trie(batch_data)
+        
+        if "batch_data" in batch:
+            batch_data = batch.pop("batch_data")
+            self.filter_entity_trie(batch_data)
 
 
         topk = self.args.beam_size
