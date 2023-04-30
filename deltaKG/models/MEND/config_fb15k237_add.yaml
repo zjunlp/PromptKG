@@ -1,0 +1,88 @@
+num_workers: 8
+max_seq_length: 64
+warm_up_radio: 0.1
+data_dir: datasets/FB15k237/AddKnowledge
+stable_batch_size: 8
+# eval_batch_size: 32
+model_name_or_path: bert-base-uncased
+task_name: add
+pretrain: 0
+
+alg: mend
+lr: 1.0e-06
+edit_lr: 0.0001
+seed: 0
+debug: false
+model_save_pt: 5000
+edit_bs: 1
+silent: false
+max_iters: 30000
+log_interval: 100
+val_interval: 1000
+lr_lr: 0.0001
+# batch_size: 32
+val_batch_size: 32
+accumulate_bs: 10
+cedit: 0.1
+cloc: 1.0
+cbase: 1.0
+val_steps: 500
+device: cuda
+base_loss: distill
+oracle: false
+train: true
+train_base: false
+opt: AdamW
+single_batch: false # add is true and edit is false
+archive: null
+grad_clip: 100.0
+ref: null
+early_stop_patience: 20000
+early_stop_key: loss/total_edit_val
+dropout: 0.0
+tokenizer: null
+results_dir: models/MEND/output
+no_grad_layers: null
+eval_only: false
+half: false
+save: false
+model:
+  from_pretrain: checkpoints/PT_KGE_A-FB15k237
+  pt: 
+  name: bert-base-uncased
+  class_name: BertMaskedLM
+  tokenizer_class: BertTokenizer
+  tokenizer_name: bert-base-uncased
+  inner_params:
+  - bert.encoder.layer.9.intermediate.dense.weight
+  - bert.encoder.layer.9.output.dense.weight
+  - bert.encoder.layer.10.intermediate.dense.weight
+  - bert.encoder.layer.10.output.dense.weight
+  - bert.encoder.layer.11.intermediate.dense.weight
+  - bert.encoder.layer.11.output.dense.weight
+data:
+  path: ../datasets/FB15k237/AddKnowledge
+  rephrase: false
+  zsre_nq: false
+  nq_path: data/nq
+  wiki_webtext: false
+  n_edits: 16
+eval:
+  verbose: true
+  log_interval: 100
+  final_eval: true
+mend:
+  one_sided: false
+  n_hidden: 1
+  hidden_dim: null
+  init: id
+  norm: true
+  combine: true
+  x_only: false
+  delta_only: false
+  act: relu
+  rank: 1920
+  mlp_class: IDMLP
+  shared: true
+task: kgc
+dataset: kgc
