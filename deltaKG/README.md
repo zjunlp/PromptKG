@@ -1,8 +1,7 @@
 <div align="center">
-    <!-- <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/lambda_logo.png" width="550px"> -->
-    <h1> DeltaKG </h1>
+    <img src="https://github.com/zjunlp/PromptKG/blob/main/resources/deltakg_logo.png" width="550px">
     <p> <b>
-        A dynamic, PLM-based library for Knowledge Graph Embeddings.</b>
+        A Library for Dynamically Editing PLMs-Based Knowledge Graph Embeddings.</b>
     </p>
     
 ------
