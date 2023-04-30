@@ -12,7 +12,7 @@
   <a href="#installation">Installation</a> •
   <a href="#how-to-run">How To Run</a> •
   <a href="https://arxiv.org/pdf/2301.10405">Paper</a> •
-  <a href="https://medium.com/@tbozhong/a935ba8769a7">Medium</a> •
+  <a href="https://medium.com/@jack16900/deltakg-a-library-for-dynamically-editing-plm-based-kg-embeddings-243d59a8f168">Medium</a> •
   <a href="#how-to-cite">Citation</a> •
   <a href="#other-kg-representation-open-source-projects">Others</a> 
 </p>
