@@ -161,6 +161,7 @@
 - When Not to Trust Language Models: Investigating Effectiveness and Limitations of Parametric and Non-Parametric Memories, in arxiv 2022.  [\[pdf\]](https://akariasai.github.io/files/llm_memorization.pdf)
 - Why Can GPT Learn In-Context? Language Models Secretly Perform Gradient Descent as Meta-Optimizers，in arxiv 2022.  [\[pdf\]](https://arxiv.org/pdf/2212.10559.pdf)
 - Fantastically Ordered Prompts and Where to Find Them: Overcoming Few-Shot Prompt Order Sensitivity, in ACL 2022.  [\[pdf\]](https://aclanthology.org/2022.acl-long.556.pdf)
+- Editing Large Language Models: Problems, Methods, and Opportunities, in arxiv 2023.  [\[pdf\]](https://arxiv.org/pdf/2305.13172.pdf)
 
 ## Contact Information
 
