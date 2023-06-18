@@ -54,6 +54,7 @@
 * Reasoning with Language Model Prompting: A Survey (on arxiv 2022) \[[paper](https://arxiv.org/abs/2212.09597)\]
 * Reasoning over Different Types of Knowledge Graphs: Static, Temporal and Multi-Modal (on arxiv 2022)  \[[paper](https://arxiv.org/abs/2212.05767)\]
 * The Life Cycle of Knowledge in Big Language Models: A Survey (on arxiv 2022)  \[[paper](https://arxiv.org/abs/2303.07616)\]
+* Unifying Large Language Models and Knowledge Graphs: A Roadmap (on arxiv 2023) \[[paper](https://arxiv.org/abs/2306.08302)\]
 
 
 # Papers
