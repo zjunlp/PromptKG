@@ -91,7 +91,7 @@
 - Training Data is More Valuable than You Think: A Simple and Effective Method by Retrieving from Training Data, in ACL 2022. [\[pdf\]](https://aclanthology.org/2022.acl-long.226.pdf)
 - One Model for All Domains: Collaborative Domain-Prefix Tuning for Cross-Domain NER, in Arxiv 2023. [\[pdf\]](https://arxiv.org/pdf/2301.10410.pdf)
 - REPLUG: Retrieval-Augmented Black-Box Language Models, in Arxiv 2023. [\[pdf\]](https://arxiv.org/pdf/2301.12652.pdf)
-
+- Knowledge-Augmented Language Model Prompting for Zero-Shot Knowledge Graph Question Answering, in Arxiv 2023. [\[pdf\]](https://arxiv.org/pdf/2306.04136.pdf)
 
 *Multimodal*
 
