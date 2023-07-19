@@ -38,7 +38,8 @@ class KGT5DataModule(BaseKGCDataModule):
             self.tokenizer = T5Tokenizer.from_pretrained(self.args.model_name_or_path)
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.args.model_name_or_path, use_fast=False)
-            
+        self.prompt=args.prompt
+        print(self.prompt)
         # use entity plain name as labels, "Plato, a xxx" => "Plato"
         self.entity2input_ids = {i:k for i, k in enumerate(self.tokenizer(list(map(lambda x: x.split(",")[0], self.entity2text.values())), add_special_tokens=True).input_ids)}
 

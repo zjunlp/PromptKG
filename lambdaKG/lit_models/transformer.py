@@ -944,6 +944,48 @@ class KGBartLitModel(KGT5LitModel):
         parser.add_argument("--use_ce_loss", type=int, default=1, help="")
 
         return parser
+    
+    
+    def test_step(self, batch, batch_idx):
+        
+        result = self._eval_normal1(batch, batch_idx)
+        self.log("Test/result", np.mean(result['ranks']), prog_bar=True, logger=False)
+
+        return result
+    
+    def rank(self,batch,outputs):
+        labels = batch.pop("labels")
+        batch_data = batch.pop("batch_data")
+        bsz = batch['input_ids'].shape[0]
+        hr_t = self.trainer.datamodule.filter_hr_to_t
+        tr_h = self.trainer.datamodule.filter_tr_to_h
+        src = self.decode(labels)
+        entity2id = self.trainer.datamodule.entity2id
+        topk = self.args.beam_size
+
+        ranks = []
+        for i in range(bsz):
+            in_flag = False
+            cnt = 1
+            for j in range(topk):
+                if outputs[i][j] == src[i]:
+                    ranks.append(cnt)
+                    in_flag = True
+                    break
+                if outputs[i][j] in entity2id:
+                    target_id = entity2id[outputs[i][j]]
+                    if not batch_data[i].inverse:
+                        if target_id in hr_t[batch_data[i].hr]:
+                            continue
+                    else:
+                        if target_id in tr_h[batch_data[i].hr]:
+                            continue
+
+                cnt += 1
+
+            if not in_flag:
+                ranks.append(10000)    
+        return ranks    
 
     def _eval_normal1(
         self,
@@ -972,16 +1014,17 @@ class KGBartLitModel(KGT5LitModel):
 
         outputs = self.model.generate(
             **batch,
-            # prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+            prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
             num_beams=topk,
             num_return_sequences=topk,
             top_p=1.,
             max_length=64,
             use_cache=True,
-        ).view(bsz, topk, -1).cpu()
+        ).view(bsz, topk, -1).cpu() 
         src = self.decode(labels)
         outputs = [self.decode(o) for o in outputs]
         ranks = []
+#        ranks=self.rank(batch,outputs)
         for i in range(bsz):
             in_flag = False
             cnt = 1

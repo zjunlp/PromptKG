@@ -141,7 +141,7 @@ class KGT5Dataset(Dataset):
             if line[-1] == '\n':
                 line = line[:-1]
             line = line.split('\t')
-            inputs.append(line[0])
+            inputs.append(args.prompt+line[0])
             outputs.append(line[1])
             h.append((int(line[2]), int(line[3])))
             target_entity_ids.append(int(line[4]))

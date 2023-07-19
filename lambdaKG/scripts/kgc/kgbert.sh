@@ -1,6 +1,6 @@
 dataset="WN18RR"
 
-CUDA_VISIBLE_DEVICES= python main.py  --max_epochs=10  --num_workers=16 \
+CUDA_VISIBLE_DEVICES=2 python main.py  --max_epochs=10  --num_workers=16 \
    --model_name_or_path  bert-base-uncased \
    --num_sanity_val_steps 0 \
    --model_class KGBERTModel \

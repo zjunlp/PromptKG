@@ -1,8 +1,8 @@
 dataset="WN18RR"
 
-CUDA_VISIBLE_DEVICES=3 python main.py  \
-   --max_epochs=60  --num_workers=8 \
-   --model_name_or_path  facebook/bart-base \
+CUDA_VISIBLE_DEVICES=2 python main.py  \
+   --max_epochs=2  --num_workers=8 \
+   --model_name_or_path  /data/xzk/PromptKG/lambdaKG/bart-base \
    --model_class BartKGC \
    --strategy="deepspeed_stage_2" \
    --lit_model_class KGBartLitModel \
@@ -18,6 +18,7 @@ CUDA_VISIBLE_DEVICES=3 python main.py  \
    --dataset ${dataset} \
    --eval_batch_size 4 \
    --beam_size 10 \
+   --prompt  test\
    --max_seq_length 128 \
    --lr 1e-4 
 

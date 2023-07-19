@@ -40,7 +40,7 @@ def _setup_parser():
     parser.add_argument("--model_class", type=str, default="RobertaUseLabelWord")
     parser.add_argument("--early_stop", type=int, default=1)
     parser.add_argument("--checkpoint", type=str, default=None)
-
+    parser.add_argument("--prompt",type=str,default=" ")
     # Get the data and model classes, so that we can add their specific arguments
     temp_args, _ = parser.parse_known_args()
     data_class = _import_class(f"data.{temp_args.data_class}")
@@ -50,7 +50,6 @@ def _setup_parser():
     # Get data, model, and LitModel specific arguments
     data_group = parser.add_argument_group("Data Args")
     data_class.add_to_argparse(data_group)
-
     model_group = parser.add_argument_group("Model Args")
     if hasattr(model_class, "add_to_argparse"):
         model_class.add_to_argparse(model_group)
@@ -68,9 +67,7 @@ metric_list = {"knnkge" : "hits10",
 def main():
     parser = _setup_parser()
     args = parser.parse_args()
-
     args.gpus = torch.cuda.device_count()
-
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     pl.seed_everything(args.seed)
@@ -89,13 +86,9 @@ def main():
     if "csk" in args.dataset:
         metric_name = "auc"
 
-    data = data_class(args)
-    tokenizer = data.tokenizer
-
-
-
-
-
+    data = data_class(args)#KGT5DataModule
+    print(data)
+    tokenizer = data.tokenizer#KGT5DataModule
     lit_model = litmodel_class(args=args, tokenizer=tokenizer, num_relation=data.num_relation, num_entity = data.num_entity)
 
     # if args.checkpoint:
