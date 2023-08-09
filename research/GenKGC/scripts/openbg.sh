@@ -5,7 +5,6 @@ python main.py --gpus "0," --max_epochs=10  --num_workers=32 \
    --batch_size 96 \
    --check_val_every_n_epoch 3 \
    --data_dir dataset/AliOpenKG500 \
-   --checkpoint output/epoch=5-Eval/hits10=0.25.ckpt \
    --eval_batch_size 1 \
    --precision 16 \
    --overwrite_cache \
