@@ -660,11 +660,11 @@ class KGBERTLitModel(BaseLitModel):
     def validation_step(self, batch, batch_idx):
         labels = batch.pop("labels")
         outputs = self.model(**batch).logits
-        self.accuracy.update(outputs, labels)
+        self.metric.update(outputs, labels)
 
     def validation_epoch_end(self, outputs) -> None:
-        self.log("acc", self.accuracy.compute())
-        self.accuracy.reset()
+        self.log("acc", self.metric.compute())
+        self.metric.reset()
 
     def test_step(self, batch, batch_idx):
         self.validation_step(batch, batch_idx)
