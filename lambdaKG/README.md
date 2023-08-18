@@ -156,6 +156,7 @@ After running, result file `test_result.json` is available under fold `dataset/a
 
 For help or issues using the models, please submit a GitHub issue.
 # Result
+All results are based on the current environment and existing scripts. Your experimental outcomes may exhibit slight deviations from ours.
 | task | dataset | method |hist1|mrr|
 |:------:|:---------:|:--------:|:-----:|:---:|
 |kgc    |WN18RR |simkgc  |42.5 |60.8|
