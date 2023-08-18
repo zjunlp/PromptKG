@@ -155,7 +155,21 @@ After running, result file `test_result.json` is available under fold `dataset/a
 ### Contact Information
 
 For help or issues using the models, please submit a GitHub issue.
-
+# Result
+| task | dataset | method |hist1|mrr|
+|:------:|:---------:|:--------:|:-----:|:---:|
+|kgc    |WN18RR |simkgc  |42.5 |60.8|
+|kgc    |WN18RR |kgt5    |17.5 |---|        
+|kgc    |WN18RR |genkgc  |32.5|---|
+|kgc    |WN18RR |knnkge |52.4|57.9|
+|kgc    |FB15k  |simkgc     |22.8|30.0|
+|kgc    |FB15k  |kgt5       |11.0|---|
+|kgc    |FB15k  |genkgc  |19.1|---|
+|kgc    |FB15k  |knnkge  |28.1|37.3|
+|qa     |metaqa |kgt5|67.0|---|
+|rec    |ml20m  |bert|34.4|47.9|
+|lama   |goole_re|bert|11.2|18.2|
+|lama   |goole_re|robert|7.7|12.5|
 # Citation
 If you use the code, please cite the following paper:
 
