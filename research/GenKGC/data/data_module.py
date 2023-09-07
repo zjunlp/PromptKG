@@ -146,7 +146,7 @@ class KGC(BaseDataModule):
         
         # fix
         relations_ids = ["[RELATION_{i}]" for i in range(len(self.label_list))]
-        if spo_list[0] not in self.tokenizer.additional_special_tokens:
+        if relations_ids[0] not in self.tokenizer.additional_special_tokens:
             num_added_tokens = self.tokenizer.add_special_tokens({'additional_special_tokens': relations_ids})
         self.sampler = DataCollatorForSeq2Seq(self.tokenizer,
             model=model,
