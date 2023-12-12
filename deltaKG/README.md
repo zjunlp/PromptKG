@@ -17,6 +17,9 @@
 </p>
 </div>
 
+## News
+- **2024-12-09 Our paper "[Editing Language Model-based Knowledge Graph Embeddings?](https://arxiv.org/abs/2301.10405)" has been accepted by AAAI 2024.**
+
 ## Overview
 Knowledge graph embedding (KGE) is a method for representing symbolic facts in low-dimensional vector spaces, with the goal of projecting relations and entities into a continuous vector space. This approach enhances knowledge reasoning capabilities and facilitates application to downstream tasks.
 
