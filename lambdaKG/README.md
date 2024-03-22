@@ -67,7 +67,7 @@ Install our preprocessed datasets and put them into the `dataset` folder.
 | MetaQA  | [google drive](https://drive.google.com/drive/folders/1q4kph9nd4ADjvkPIZvAwYbqza7o7DFt9?usp=sharing) |  [baidu drive](https://pan.baidu.com/s/1AYnfjDAM7z8G3QeEqHTKhg) `hzc9`           |
 | KG20C   | [google drive](https://drive.google.com/drive/folders/1AJCRYiNJUFc7inwvrvarwK2hbZEyDALE?usp=sharing) |  [baidu drive](https://pan.baidu.com/s/18pqe1Zz2iT9vY7v5YadUSQ)  `stnh`           |
 | CSKB  | [google drive](https://drive.google.com/drive/folders/1A8ofqSOw2xuCkfZgZJkZiTIf-pNG45yi?usp=share_link)  | [baidu drive](https://pan.baidu.com/s/11gleLSKhxN5dIJ3opa9h6g?pwd=endu) `endu`
-
+| ML20M  | [google drive](https://drive.google.com/drive/folders/1tEOuW7MdGcriuYp1pWOfwb-4oqT-FMzq?usp=drive_link)  | [baidu drive](https://pan.baidu.com/s/188bs2q9Y_xDk3IgBopJuww?pwd=2icu) `2icu`
 
 
 
